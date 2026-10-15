@@ -31,8 +31,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Unstack Learning",
-  description:
-    "Unstack Learning — personal learning support. Request help, join the queue, and meet for a session.",
+  description: "Unstack Learning — personal learning support.",
 };
 
 export default function RootLayout({
