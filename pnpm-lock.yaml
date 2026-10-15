@@ -50,9 +50,6 @@ importers:
       react-hook-form:
         specifier: ^7.90.0
         version: 7.90.0(@types/react@19.3.0)(react@19.3.0)
-      shadcn:
-        specifier: ^4.21.4
-        version: 4.21.4
       sonner:
         specifier: ^2.0.8
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -90,6 +87,9 @@ importers:
       lint-staged:
         specifier: ^17.6.0
         version: 17.6.0
+      shadcn:
+        specifier: ^4.21.4
+        version: 4.21.4
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
