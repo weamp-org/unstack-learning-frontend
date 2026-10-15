@@ -30,9 +30,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Next.js Template",
-  description:
-    "A Next.js template with Clerk auth, Tailwind v4, shadcn/ui, and dark mode.",
+  title: "Unstack Learning",
+  description: "Unstack Learning — personal learning support.",
 };
 
 export default function RootLayout({
@@ -69,13 +68,7 @@ export default function RootLayout({
                       href="/"
                       className="text-sm font-medium hover:underline"
                     >
-                      Home
-                    </Link>
-                    <Link
-                      href="/users"
-                      className="text-sm font-medium hover:underline"
-                    >
-                      Users
+                      Unstack Learning
                     </Link>
                   </nav>
                   <ThemeToggle />
@@ -89,7 +82,7 @@ export default function RootLayout({
                 </header>
                 <main className="flex-1">{children}</main>
                 <footer className="p-4 text-center text-sm text-muted-foreground">
-                  &copy; {new Date().getFullYear()} Next.js Template
+                  &copy; {new Date().getFullYear()} Unstack Learning
                 </footer>
                 <Toaster />
               </AuthTokenSetter>

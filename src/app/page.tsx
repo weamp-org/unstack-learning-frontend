@@ -4,18 +4,22 @@ export default async function Home() {
   const user = await currentUser();
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-8 p-8">
-      <h1 className="text-4xl font-bold tracking-tight">Next.js Template</h1>
+    <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
+      <h1 className="text-4xl font-bold tracking-tight">Unstack Learning</h1>
+      <p className="max-w-xl text-lg text-muted-foreground">
+        Personal learning support — this site is just getting started, and help
+        requests, queueing, and sessions are not available yet.
+      </p>
       {user ? (
-        <p className="text-lg text-muted-foreground">
-          Welcome back,{" "}
+        <p className="text-sm text-muted-foreground">
+          Signed in as{" "}
           <span className="font-medium text-foreground">
             {user.firstName || user.emailAddresses[0]?.emailAddress}
           </span>
           .
         </p>
       ) : (
-        <p className="text-lg text-muted-foreground">Sign in to get started.</p>
+        <p className="text-sm text-muted-foreground">Sign in to get started.</p>
       )}
     </div>
   );

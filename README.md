@@ -1,6 +1,6 @@
-# Next.js Template
+# Unstack Learning Frontend
 
-A production-ready [Next.js 16](https://nextjs.org) template with [Clerk](https://clerk.com) authentication, [Tailwind CSS v4](https://tailwindcss.com), [shadcn/ui](https://ui.shadcn.com), and dark mode.
+The [Next.js 16](https://nextjs.org) frontend for Unstack Learning, with [Clerk](https://clerk.com) authentication, [Tailwind CSS v4](https://tailwindcss.com), [shadcn/ui](https://ui.shadcn.com), and dark mode.
 
 ## Features
 
@@ -43,30 +43,18 @@ src/
 ├── app/
 │   ├── globals.css          # Tailwind v4 + shadcn theme tokens
 │   ├── layout.tsx           # Root layout (Clerk, ThemeProvider, header/footer)
-│   ├── page.tsx             # Home page (auth-aware greeting)
+│   ├── page.tsx             # Home page (Unstack Learning placeholder)
 │   ├── loading.tsx          # Loading spinner (page transitions)
 │   ├── error.tsx            # Error boundary
-│   ├── not-found.tsx        # 404 page
-│   └── users/
-│       └── page.tsx         # Users listing via useUsers() hook
+│   └── not-found.tsx        # 404 page
 ├── components/
-│   ├── ui/
-│   │   ├── button.tsx       # shadcn/ui Button
-│   │   ├── card.tsx         # shadcn/ui Card
-│   │   ├── dialog.tsx       # shadcn/ui Dialog
-│   │   ├── form.tsx         # shadcn/ui Form
-│   │   ├── input.tsx        # shadcn/ui Input
-│   │   ├── label.tsx        # shadcn/ui Label
-│   │   └── sonner.tsx       # shadcn/ui Sonner toasts
+│   ├── ui/                  # shadcn/ui components (button, card, dialog, form, input, label, sonner, ...)
 │   ├── query-provider.tsx   # TanStack Query provider (staleTime: 30s)
 │   ├── theme-provider.tsx   # next-themes provider wrapper
 │   └── theme-toggle.tsx     # Light/dark toggle button
-├── hooks/
-│   └── use-users.ts         # useUsers() / useUser() hooks
 ├── lib/
-│   ├── api.ts               # Axios instance + auth interceptor
+│   ├── api.ts               # Axios instance + Clerk auth interceptor
 │   ├── auth-token-setter.tsx # Clerk JWT → Axios interceptor
-│   ├── users.ts             # Typed user API functions
 │   └── utils.ts             # cn() helper (clsx + tailwind-merge)
 └── proxy.ts                 # Clerk middleware (Next.js 16 name)
 ```
@@ -77,7 +65,7 @@ src/
 | ----------------------------------- | ----------------------------------------------------------- |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key (public, starts with `pk_`)           |
 | `CLERK_SECRET_KEY`                  | Clerk secret key (private, starts with `sk_`)               |
-| `NEXT_PUBLIC_BACKEND_BASE_URL`      | NestJS backend URL (default: `http://localhost:3000/api/v1`) |
+| `NEXT_PUBLIC_BACKEND_BASE_URL`      | Unstack Learning API URL (default: `http://localhost:3000/api/v1`) |
 
 ## Scripts
 

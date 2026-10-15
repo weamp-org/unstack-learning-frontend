@@ -26,21 +26,14 @@ NEXT_PUBLIC_BACKEND_BASE_URL=https://your-api.com/api/v1
 
 ## Deploy targets
 
-### Vercel (recommended)
+Production deploys to **Vercel**:
 
 1. Push to a Git repository
 2. Import on [Vercel](https://vercel.com/new)
-3. Set the three environment variables in the project settings
+3. Set the three environment variables in the project settings (`NEXT_PUBLIC_BACKEND_BASE_URL` must point at the Render API, including the `/api/v1` prefix)
 4. Deploy — zero configuration needed for Next.js
 
-### Other platforms
-
-Most platforms (Netlify, Railway, Docker) can deploy Next.js. Make sure:
-
-- The build command is `pnpm build`
-- The output directory is `.next` (default)
-- The start command is `pnpm start`
-- All env vars (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_BACKEND_BASE_URL`) are set
+`NEXT_PUBLIC_*` values are inlined at build time, so changing them requires a rebuild.
 
 ## Clerk configuration
 

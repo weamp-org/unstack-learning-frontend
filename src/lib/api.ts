@@ -1,8 +1,18 @@
 import axios from "axios";
 
+const baseURL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
+
+if (!baseURL) {
+  // Warn loudly instead of silently pointing at localhost: the fallback
+  // below only makes sense for local development.
+  console.warn(
+    "NEXT_PUBLIC_BACKEND_BASE_URL is not set; falling back to http://localhost:3000/api/v1 for local development.",
+  );
+}
+
 const api = axios.create({
-  baseURL:
-    process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:3000/api/v1",
+  baseURL: baseURL ?? "http://localhost:3000/api/v1",
+  timeout: 10_000,
 });
 
 let interceptorId: number | null = null;
@@ -29,14 +39,6 @@ export function teardownAuthInterceptor() {
   if (interceptorId !== null) {
     api.interceptors.request.eject(interceptorId);
     interceptorId = null;
-  }
-}
-
-export function setAuthToken(token: string | null) {
-  if (token) {
-    api.defaults.headers.common.Authorization = `Bearer ${token}`;
-  } else {
-    delete api.defaults.headers.common.Authorization;
   }
 }
 
