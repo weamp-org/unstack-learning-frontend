@@ -29,6 +29,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      cn:
+        specifier: ^0.4.0
+        version: 0.4.0
       lucide-react:
         specifier: ^1.55.0
         version: 1.55.0(@types/react@19.3.0)(react@19.3.0)
@@ -88,8 +91,8 @@ importers:
         specifier: ^17.6.0
         version: 17.6.0
       shadcn:
-        specifier: ^4.21.4
-        version: 4.21.4
+        specifier: ^4.21.5
+        version: 4.21.5
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -1395,8 +1398,8 @@ packages:
   '@sec-ant/readable-stream@0.4.1':
     resolution: {integrity: sha512-831qok9r2t8AlxLko40y2ebgSDhenenCatLVeW/uBtnHPyhHOvG0C7TvfgecV+wHzIm5KUICgzmVpWS+IMEAeg==}
 
-  '@shadcn/registry@0.1.3':
-    resolution: {integrity: sha512-82/OmKAVM9pChDHFVAsDP9PcimPGSKZGdbcdwdGGGcSI69ImpN4ZnqsfZ4hkOFEMal92t3y9djYJHMjO4PcVZA==}
+  '@shadcn/registry@0.1.4':
+    resolution: {integrity: sha512-IGrkPadYYiaDFULUYzsjUNadQQ+pwYbLP7apZDXNeB/vH7JAS5CsQ6sOuvZLGz4DuAmNap5bpV6p26fmDx0VuA==}
     engines: {node: '>=20.18.1'}
 
   '@sindresorhus/merge-streams@4.0.0':
@@ -1737,6 +1740,11 @@ packages:
 
   cn@0.2.6:
     resolution: {integrity: sha512-+i4L0zUGgRcEnhsxueVrP7iBGxBx5iD0WOTYg1MwFEu2ZyCmH5Ov2V1cul2Ht5UchRQQgftCf4be/RxspuW6QQ==}
+    engines: {node: '>=20'}
+    hasBin: true
+
+  cn@0.4.0:
+    resolution: {integrity: sha512-qOAeUhPwPzBxx6jaeQdo646XIKliKHc2j1ZF7Ngb1o0pJZKH5gq8FkA0aVdUdPFUDXNXyUCXpCtoJISo6dhizg==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -2753,8 +2761,8 @@ packages:
   setprototypeof@1.2.0:
     resolution: {integrity: sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==}
 
-  shadcn@4.21.4:
-    resolution: {integrity: sha512-YYfn/hsHbRH2mGwnKBx9tk+DjTQH+RUMS5iCxjKzwzuJ5uoHPqLOFUCJSeX0sXfrcBSfgQaXiOLGKNLjlIQxxw==}
+  shadcn@4.21.5:
+    resolution: {integrity: sha512-gZtE1by6dEdHdWKgyEZf/dkRaDHPRlTAH3qOxldHNXToxFECUSlJsb+S0LfbR4o79jflIKVryhe9UCXZf407Vw==}
     engines: {node: '>=20.18.1'}
     hasBin: true
 
@@ -4349,7 +4357,7 @@ snapshots:
 
   '@sec-ant/readable-stream@0.4.1': {}
 
-  '@shadcn/registry@0.1.3':
+  '@shadcn/registry@0.1.4':
     dependencies:
       '@babel/core': 7.29.7
       '@babel/parser': 7.29.9
@@ -4707,6 +4715,8 @@ snapshots:
   clsx@2.1.1: {}
 
   cn@0.2.6: {}
+
+  cn@0.4.0: {}
 
   code-block-writer@13.0.3: {}
 
@@ -5650,7 +5660,7 @@ snapshots:
 
   setprototypeof@1.2.0: {}
 
-  shadcn@4.21.4:
+  shadcn@4.21.5:
     dependencies:
       '@babel/core': 7.29.7
       '@babel/parser': 7.29.9
@@ -5658,7 +5668,7 @@ snapshots:
       '@babel/preset-typescript': 7.29.7(@babel/core@7.29.7)
       '@dotenvx/dotenvx': 1.75.1
       '@modelcontextprotocol/sdk': 1.32.1(zod@3.25.76)
-      '@shadcn/registry': 0.1.3
+      '@shadcn/registry': 0.1.4
       '@types/validate-npm-package-name': 4.0.2
       browserslist: 4.29.3
       cn: 0.2.6
