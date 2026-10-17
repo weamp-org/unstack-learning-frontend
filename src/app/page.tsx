@@ -27,6 +27,12 @@ export default async function Home() {
         <Link href="/teacher/subjects" className="underline underline-offset-4">
           Your subjects
         </Link>
+        <Link
+          href="/teacher/availability"
+          className="underline underline-offset-4"
+        >
+          Your availability
+        </Link>
       </nav>
       {user ? (
         <p className="text-sm text-muted-foreground">
