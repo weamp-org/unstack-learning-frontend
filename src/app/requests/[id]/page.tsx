@@ -292,9 +292,7 @@ export default function HelpRequestDetailPage({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="accept-url">
-                      Meeting link (optional)
-                    </FieldLabel>
+                    <FieldLabel htmlFor="accept-url">Meeting link</FieldLabel>
                     <Input
                       {...field}
                       id="accept-url"
@@ -312,9 +310,7 @@ export default function HelpRequestDetailPage({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="accept-time">
-                      Session time (optional)
-                    </FieldLabel>
+                    <FieldLabel htmlFor="accept-time">Session time</FieldLabel>
                     <Input
                       {...field}
                       id="accept-time"

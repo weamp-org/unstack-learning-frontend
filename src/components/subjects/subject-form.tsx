@@ -65,9 +65,7 @@ export function SubjectForm({
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="subject-description">
-                Description (optional)
-              </FieldLabel>
+              <FieldLabel htmlFor="subject-description">Description</FieldLabel>
               <Textarea
                 {...field}
                 id="subject-description"
