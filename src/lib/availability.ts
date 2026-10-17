@@ -29,7 +29,6 @@ export const availabilityFormSchema = z
     weekday: z.coerce.number().min(0).max(6),
     startTime: z.string().regex(timePattern, "Start must be HH:MM (24-hour)."),
     endTime: z.string().regex(timePattern, "End must be HH:MM (24-hour)."),
-    timezone: z.string().optional(),
   })
   .refine((values) => values.endTime > values.startTime, {
     message: "End must be after start (overnight windows aren't supported).",

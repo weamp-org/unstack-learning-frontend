@@ -45,7 +45,6 @@ function AvailabilityManager() {
       weekday: 1,
       startTime: "",
       endTime: "",
-      timezone: "",
     },
   });
 
@@ -57,7 +56,7 @@ function AvailabilityManager() {
     mutationFn: createAvailability,
     onSuccess: () => {
       invalidate();
-      form.reset({ weekday: 1, startTime: "", endTime: "", timezone: "" });
+      form.reset({ weekday: 1, startTime: "", endTime: "" });
       toast.success("Availability added.");
     },
     onError: (error) =>
@@ -86,8 +85,7 @@ function AvailabilityManager() {
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-8">
       <h1 className="text-3xl font-bold tracking-tight">Your availability</h1>
       <p className="text-muted-foreground">
-        Set the weekly hours you can help learners. Times use Africa/Accra
-        unless you specify another timezone.
+        Set the weekly hours you can help learners. Times are in Africa/Accra.
       </p>
 
       <Form {...form}>
@@ -97,8 +95,6 @@ function AvailabilityManager() {
               weekday: values.weekday,
               startTime: values.startTime,
               endTime: values.endTime,
-              timezone:
-                values.timezone?.trim() === "" ? undefined : values.timezone,
             }),
           )}
           className="flex flex-col gap-4"
@@ -165,26 +161,6 @@ function AvailabilityManager() {
               )}
             />
           </div>
-          <Controller
-            name="timezone"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="availability-timezone">
-                  Timezone (optional)
-                </FieldLabel>
-                <Input
-                  {...field}
-                  id="availability-timezone"
-                  placeholder="Africa/Accra"
-                  aria-invalid={fieldState.invalid}
-                />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
           <Button type="submit" disabled={createMutation.isPending}>
             {createMutation.isPending ? "Adding…" : "Add window"}
           </Button>
