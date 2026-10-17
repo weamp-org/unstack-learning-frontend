@@ -1,4 +1,5 @@
 import { currentUser } from "@clerk/nextjs/server";
+import Link from "next/link";
 
 export default async function Home() {
   const user = await currentUser();
@@ -13,6 +14,14 @@ export default async function Home() {
         Requesting help isn&apos;t available yet; we&apos;re building the core
         experience now.
       </p>
+      <nav className="flex items-center gap-4 text-sm font-medium">
+        <Link href="/subjects" className="underline underline-offset-4">
+          Browse subjects
+        </Link>
+        <Link href="/admin/subjects" className="underline underline-offset-4">
+          Manage subjects
+        </Link>
+      </nav>
       {user ? (
         <p className="text-sm text-muted-foreground">
           Signed in as{" "}

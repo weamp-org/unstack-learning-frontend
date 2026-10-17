@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { type SubjectFormValues, subjectFormSchema } from "@/lib/subjects";
 
 interface SubjectFormProps {
@@ -64,9 +65,10 @@ export function SubjectForm({
               <FieldLabel htmlFor="subject-description">
                 Description (optional)
               </FieldLabel>
-              <Input
+              <Textarea
                 {...field}
                 id="subject-description"
+                rows={3}
                 placeholder="What does this subject cover?"
                 aria-invalid={fieldState.invalid}
               />

@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
+import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -25,6 +26,7 @@ import {
 import {
   createSubject,
   deleteSubject,
+  fetchCurrentUser,
   listSubjects,
   type Subject,
   subjectErrorMessage,
@@ -40,9 +42,17 @@ export default function AdminSubjectsPage() {
   const [editing, setEditing] = useState<Subject | null>(null);
   const [deleting, setDeleting] = useState<Subject | null>(null);
 
+  const meQuery = useQuery({
+    queryKey: ["me"],
+    queryFn: fetchCurrentUser,
+    retry: false,
+  });
+  const isAdmin = meQuery.data?.role === "ADMIN";
+
   const subjectsQuery = useQuery({
     queryKey: ADMIN_SUBJECTS_KEY,
     queryFn: () => listSubjects(true),
+    enabled: isAdmin,
     retry: false,
   });
 
@@ -96,10 +106,47 @@ export default function AdminSubjectsPage() {
   }
 
   const submitting = createMutation.isPending || updateMutation.isPending;
-  const isForbidden =
-    subjectsQuery.isError &&
-    isAxiosError(subjectsQuery.error) &&
-    subjectsQuery.error.response?.status === 403;
+  const isSignedOut =
+    meQuery.isError &&
+    isAxiosError(meQuery.error) &&
+    meQuery.error.response?.status === 401;
+
+  if (meQuery.isPending) {
+    return (
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-8">
+        <p className="text-sm text-muted-foreground">Loading…</p>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {isSignedOut ? "Sign in required" : "Admins only"}
+            </CardTitle>
+            <CardDescription>
+              {isSignedOut
+                ? "Sign in to manage subjects."
+                : "This page is only for admins."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button variant="outline" asChild>
+              <Link href="/">Go back home</Link>
+            </Button>
+          </CardContent>
+        </Card>
+        {meQuery.isError && !isSignedOut ? (
+          <Button variant="outline" onClick={() => meQuery.refetch()}>
+            Try again
+          </Button>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-8">
@@ -110,15 +157,6 @@ export default function AdminSubjectsPage() {
 
       {subjectsQuery.isPending ? (
         <p className="text-sm text-muted-foreground">Loading subjects…</p>
-      ) : isForbidden ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Admins only</CardTitle>
-            <CardDescription>
-              You don&apos;t have permission to manage subjects.
-            </CardDescription>
-          </CardHeader>
-        </Card>
       ) : subjectsQuery.isError ? (
         <div className="flex flex-col items-start gap-2">
           <p className="text-sm text-muted-foreground">
