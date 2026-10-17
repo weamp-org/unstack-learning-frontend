@@ -33,6 +33,15 @@ export default async function Home() {
         >
           Your availability
         </Link>
+        <Link href="/requests/new" className="underline underline-offset-4">
+          Request help
+        </Link>
+        <Link href="/requests/me" className="underline underline-offset-4">
+          My requests
+        </Link>
+        <Link href="/teacher/requests" className="underline underline-offset-4">
+          Review queue
+        </Link>
       </nav>
       {user ? (
         <p className="text-sm text-muted-foreground">
