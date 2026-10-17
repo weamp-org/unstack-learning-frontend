@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
-
+import { FormRequiredNote, RequiredMark } from "@/components/required-mark";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Form } from "@/components/ui/form";
@@ -67,12 +67,15 @@ export default function NewHelpRequestPage() {
           )}
           className="flex flex-col gap-4"
         >
+          <FormRequiredNote extra="Provide details or at least one link." />
           <Controller
             name="subjectId"
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="request-subject">Subject</FieldLabel>
+                <FieldLabel htmlFor="request-subject">
+                  Subject <RequiredMark />
+                </FieldLabel>
                 <select
                   {...field}
                   id="request-subject"
@@ -102,7 +105,9 @@ export default function NewHelpRequestPage() {
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="request-topic">Topic</FieldLabel>
+                <FieldLabel htmlFor="request-topic">
+                  Topic <RequiredMark />
+                </FieldLabel>
                 <Input
                   {...field}
                   id="request-topic"

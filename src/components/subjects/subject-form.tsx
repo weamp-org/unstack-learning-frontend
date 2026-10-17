@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-
+import { FormRequiredNote, RequiredMark } from "@/components/required-mark";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Form } from "@/components/ui/form";
@@ -41,12 +41,15 @@ export function SubjectForm({
         )}
         className="flex flex-col gap-4"
       >
+        <FormRequiredNote />
         <Controller
           name="name"
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="subject-name">Name</FieldLabel>
+              <FieldLabel htmlFor="subject-name">
+                Name <RequiredMark />
+              </FieldLabel>
               <Input
                 {...field}
                 id="subject-name"
