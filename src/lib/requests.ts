@@ -117,6 +117,39 @@ export async function closeHelpRequest(id: string): Promise<HelpRequest> {
   return data;
 }
 
+export async function updateHelpSession(
+  id: string,
+  input: { sessionUrl?: string; scheduledAt?: string },
+): Promise<HelpRequest> {
+  const { data } = await api.patch<HelpRequest>(
+    `/requests/${id}/session`,
+    input,
+  );
+  return data;
+}
+
+/** Default prep buffer between accepting and meeting, in minutes. */
+export const SESSION_LEAD_MINUTES = 15;
+
+function pad(value: number): string {
+  return String(value).padStart(2, "0");
+}
+
+/** Format a Date as a browser-local datetime-local input value. */
+export function toDateTimeLocal(value: Date): string {
+  return (
+    `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}` +
+    `T${pad(value.getHours())}:${pad(value.getMinutes())}`
+  );
+}
+
+/** Prefill for the session time: now plus the prep buffer. */
+export function defaultSessionTime(from = new Date()): string {
+  return toDateTimeLocal(
+    new Date(from.getTime() + SESSION_LEAD_MINUTES * 60_000),
+  );
+}
+
 export function requestErrorMessage(error: unknown, fallback: string): string {
   if (isAxiosError(error)) {
     const message = error.response?.data as { message?: unknown } | undefined;

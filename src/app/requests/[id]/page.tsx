@@ -1,14 +1,12 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
 
+import { SessionDetailsForm } from "@/components/session-form";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,30 +23,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { Form } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import {
   acceptHelpRequest,
   closeHelpRequest,
   declineHelpRequest,
+  defaultSessionTime,
   getHelpRequest,
   requestErrorMessage,
+  toDateTimeLocal,
+  updateHelpSession,
 } from "@/lib/requests";
 import { getMyTeachingSubjects } from "@/lib/subjects";
 import { fetchCurrentUser } from "@/lib/users";
-
-const acceptFormSchema = z.object({
-  sessionUrl: z
-    .string()
-    .url("Enter a valid URL.")
-    .max(2048, "URL is too long.")
-    .or(z.literal(""))
-    .optional(),
-  scheduledAt: z.string().optional(),
-});
-
-type AcceptFormValues = z.infer<typeof acceptFormSchema>;
 
 export default function HelpRequestDetailPage({
   params,
@@ -61,6 +47,7 @@ export default function HelpRequestDetailPage({
   const [acceptOpen, setAcceptOpen] = useState(false);
   const [declineOpen, setDeclineOpen] = useState(false);
   const [closeOpen, setCloseOpen] = useState(false);
+  const [editSessionOpen, setEditSessionOpen] = useState(false);
 
   const meQuery = useQuery({
     queryKey: ["me"],
@@ -81,11 +68,6 @@ export default function HelpRequestDetailPage({
     retry: false,
   });
 
-  const form = useForm<AcceptFormValues>({
-    resolver: zodResolver(acceptFormSchema),
-    defaultValues: { sessionUrl: "", scheduledAt: "" },
-  });
-
   function invalidate() {
     queryClient.invalidateQueries({ queryKey: ["requests"] });
   }
@@ -96,11 +78,22 @@ export default function HelpRequestDetailPage({
     onSuccess: () => {
       invalidate();
       setAcceptOpen(false);
-      form.reset();
       toast.success("Request accepted.");
     },
     onError: (error) =>
       toast.error(requestErrorMessage(error, "Could not accept request.")),
+  });
+
+  const updateSessionMutation = useMutation({
+    mutationFn: (input: { sessionUrl?: string; scheduledAt?: string }) =>
+      updateHelpSession(id, input),
+    onSuccess: () => {
+      invalidate();
+      setEditSessionOpen(false);
+      toast.success("Session updated.");
+    },
+    onError: (error) =>
+      toast.error(requestErrorMessage(error, "Could not update session.")),
   });
 
   const declineMutation = useMutation({
@@ -165,6 +158,10 @@ export default function HelpRequestDetailPage({
   const canClose =
     request.status !== "CLOSED" &&
     (isOwner || isAssignedTeacher || role === "ADMIN");
+  const canEditSession =
+    request.session !== null &&
+    request.session !== undefined &&
+    (isAssignedTeacher || role === "ADMIN");
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-8">
@@ -247,7 +244,7 @@ export default function HelpRequestDetailPage({
             ) : null}
           </CardContent>
         ) : null}
-        {(canAct || canClose) && (
+        {(canAct || canClose || canEditSession) && (
           <CardContent className="flex flex-wrap gap-2">
             {canAct ? (
               <>
@@ -256,6 +253,14 @@ export default function HelpRequestDetailPage({
                   Decline
                 </Button>
               </>
+            ) : null}
+            {canEditSession ? (
+              <Button
+                variant="outline"
+                onClick={() => setEditSessionOpen(true)}
+              >
+                Edit session
+              </Button>
             ) : null}
             {canClose ? (
               <Button variant="outline" onClick={() => setCloseOpen(true)}>
@@ -272,71 +277,20 @@ export default function HelpRequestDetailPage({
             <DialogTitle>Accept this request?</DialogTitle>
             <DialogDescription>
               Optionally share a meeting link and time now — you can also
-              arrange them afterwards.
+              arrange them afterwards. The time defaults to 15 minutes from now.
             </DialogDescription>
           </DialogHeader>
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit((values) =>
-                acceptMutation.mutate({
-                  sessionUrl: values.sessionUrl || undefined,
-                  scheduledAt: values.scheduledAt
-                    ? new Date(values.scheduledAt).toISOString()
-                    : undefined,
-                }),
-              )}
-              className="flex flex-col gap-4"
-            >
-              <Controller
-                name="sessionUrl"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="accept-url">Meeting link</FieldLabel>
-                    <Input
-                      {...field}
-                      id="accept-url"
-                      placeholder="https://meet.google.com/…"
-                      aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-              <Controller
-                name="scheduledAt"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="accept-time">Session time</FieldLabel>
-                    <Input
-                      {...field}
-                      id="accept-time"
-                      type="datetime-local"
-                      aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setAcceptOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={acceptMutation.isPending}>
-                  {acceptMutation.isPending ? "Accepting…" : "Accept"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
+          <SessionDetailsForm
+            key={acceptOpen ? "open" : "closed"}
+            defaultValues={{
+              sessionUrl: "",
+              scheduledAt: defaultSessionTime(),
+            }}
+            submitLabel="Accept"
+            submitting={acceptMutation.isPending}
+            onCancel={() => setAcceptOpen(false)}
+            onSubmit={(values) => acceptMutation.mutate(values)}
+          />
         </DialogContent>
       </Dialog>
 
@@ -384,6 +338,31 @@ export default function HelpRequestDetailPage({
               {closeMutation.isPending ? "Closing…" : "Close request"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={editSessionOpen} onOpenChange={setEditSessionOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit session</DialogTitle>
+            <DialogDescription>
+              Update the meeting link or time. The learner sees the latest
+              details on this page.
+            </DialogDescription>
+          </DialogHeader>
+          <SessionDetailsForm
+            key={request.session?.updatedAt ?? "new"}
+            defaultValues={{
+              sessionUrl: request.session?.sessionUrl ?? "",
+              scheduledAt: request.session?.scheduledAt
+                ? toDateTimeLocal(new Date(request.session.scheduledAt))
+                : "",
+            }}
+            submitLabel="Save session"
+            submitting={updateSessionMutation.isPending}
+            onCancel={() => setEditSessionOpen(false)}
+            onSubmit={(values) => updateSessionMutation.mutate(values)}
+          />
         </DialogContent>
       </Dialog>
     </div>
