@@ -1,20 +1,14 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Controller, useForm } from "react-hook-form";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { RequireRoles } from "@/components/require-roles";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  type AvailabilityFormValues,
   availabilityErrorMessage,
-  availabilityFormSchema,
   createAvailability,
   deleteAvailability,
   listMyAvailability,
@@ -22,6 +16,28 @@ import {
 } from "@/lib/availability";
 
 const MINE_KEY = ["availability", "mine"];
+
+interface DraftWindow {
+  key: string;
+  id: string | null;
+  start: string;
+  end: string;
+}
+
+type DraftWeek = Record<number, DraftWindow[]>;
+
+function sameWindows(a: DraftWindow[], b: DraftWindow[]): boolean {
+  if (a.length !== b.length) return false;
+  const byId = new Map(b.map((window) => [window.id, window]));
+  return a.every((window) => {
+    const other = byId.get(window.id);
+    return (
+      other !== undefined &&
+      other.start === window.start &&
+      other.end === window.end
+    );
+  });
+}
 
 export default function TeacherAvailabilityPage() {
   return (
@@ -33,52 +49,155 @@ export default function TeacherAvailabilityPage() {
 
 function AvailabilityManager() {
   const queryClient = useQueryClient();
+  const [draft, setDraft] = useState<DraftWeek | null>(null);
+
   const windowsQuery = useQuery({
     queryKey: MINE_KEY,
     queryFn: listMyAvailability,
     retry: false,
   });
 
-  const form = useForm<AvailabilityFormValues>({
-    resolver: zodResolver(availabilityFormSchema),
-    defaultValues: {
-      weekday: 1,
-      startTime: "",
-      endTime: "",
-    },
-  });
-
-  function invalidate() {
-    queryClient.invalidateQueries({ queryKey: MINE_KEY });
+  if (draft === null && windowsQuery.data !== undefined) {
+    const initial: DraftWeek = {};
+    for (const day of WEEKDAYS) initial[day.value] = [];
+    for (const window of windowsQuery.data) {
+      initial[window.weekday]?.push({
+        key: window.id,
+        id: window.id,
+        start: window.startTime,
+        end: window.endTime,
+      });
+    }
+    setDraft(initial);
   }
 
-  const createMutation = useMutation({
-    mutationFn: createAvailability,
+  const saveMutation = useMutation({
+    mutationFn: async (plan: {
+      deletes: string[];
+      creates: { weekday: number; start: string; end: string }[];
+    }) => {
+      // Deletes first: an edited row would otherwise overlap its old self.
+      await Promise.all(plan.deletes.map((id) => deleteAvailability(id)));
+      await Promise.all(
+        plan.creates.map((window) =>
+          createAvailability({
+            weekday: window.weekday,
+            startTime: window.start,
+            endTime: window.end,
+          }),
+        ),
+      );
+    },
     onSuccess: () => {
-      invalidate();
-      form.reset({ weekday: 1, startTime: "", endTime: "" });
-      toast.success("Availability added.");
+      queryClient.invalidateQueries({ queryKey: MINE_KEY });
+      setDraft(null);
+      toast.success("Availability saved.");
     },
     onError: (error) =>
-      toast.error(availabilityErrorMessage(error, "Could not add window.")),
+      toast.error(availabilityErrorMessage(error, "Could not save.")),
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: deleteAvailability,
-    onSuccess: () => {
-      invalidate();
-      toast.success("Availability removed.");
-    },
-    onError: (error) =>
-      toast.error(availabilityErrorMessage(error, "Could not remove window.")),
-  });
+  const server: DraftWeek = {};
+  for (const day of WEEKDAYS) server[day.value] = [];
+  for (const window of windowsQuery.data ?? []) {
+    server[window.weekday]?.push({
+      key: window.id,
+      id: window.id,
+      start: window.startTime,
+      end: window.endTime,
+    });
+  }
 
-  const windows = windowsQuery.data ?? [];
-  const byWeekday = new Map<number, typeof windows>();
-  for (const window of windows) {
-    const group = byWeekday.get(window.weekday) ?? [];
-    group.push(window);
-    byWeekday.set(window.weekday, group);
+  const current = draft ?? server;
+  const dirty =
+    draft !== null &&
+    WEEKDAYS.some((day) => !sameWindows(current[day.value], server[day.value]));
+
+  function updateRow(
+    weekday: number,
+    key: string,
+    patch: Partial<DraftWindow>,
+  ) {
+    setDraft((prev) => {
+      const base = prev ?? server;
+      return {
+        ...base,
+        [weekday]: base[weekday].map((window) =>
+          window.key === key ? { ...window, ...patch } : window,
+        ),
+      };
+    });
+  }
+
+  function addRow(weekday: number) {
+    setDraft((prev) => {
+      const base = prev ?? server;
+      return {
+        ...base,
+        [weekday]: [
+          ...base[weekday],
+          {
+            key:
+              typeof crypto !== "undefined" && "randomUUID" in crypto
+                ? crypto.randomUUID()
+                : `${Date.now()}-${Math.random()}`,
+            id: null,
+            start: "09:00",
+            end: "17:00",
+          },
+        ],
+      };
+    });
+  }
+
+  function removeRow(weekday: number, key: string) {
+    setDraft((prev) => {
+      const base = prev ?? server;
+      return {
+        ...base,
+        [weekday]: base[weekday].filter((window) => window.key !== key),
+      };
+    });
+  }
+
+  function handleSave() {
+    if (draft === null) return;
+    const deletes: string[] = [];
+    const creates: { weekday: number; start: string; end: string }[] = [];
+    for (const day of WEEKDAYS) {
+      const before = new Map(
+        server[day.value].map((window) => [window.id, window]),
+      );
+      for (const window of draft[day.value]) {
+        if (window.id === null) {
+          creates.push({
+            weekday: day.value,
+            start: window.start,
+            end: window.end,
+          });
+        } else {
+          const original = before.get(window.id);
+          if (
+            original === undefined ||
+            original.start !== window.start ||
+            original.end !== window.end
+          ) {
+            // No PATCH endpoint: edited rows go through delete + recreate.
+            if (window.id !== null) deletes.push(window.id);
+            creates.push({
+              weekday: day.value,
+              start: window.start,
+              end: window.end,
+            });
+          }
+          if (original !== undefined) before.delete(window.id);
+        }
+      }
+      for (const removed of before.values()) {
+        if (removed.id !== null) deletes.push(removed.id);
+      }
+    }
+    saveMutation.mutate({ deletes, creates });
   }
 
   return (
@@ -88,87 +207,8 @@ function AvailabilityManager() {
         Set the weekly hours you can help learners. Times are in Africa/Accra.
       </p>
 
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit((values) =>
-            createMutation.mutate({
-              weekday: values.weekday,
-              startTime: values.startTime,
-              endTime: values.endTime,
-            }),
-          )}
-          className="flex flex-col gap-4"
-        >
-          <Controller
-            name="weekday"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="availability-weekday">Day</FieldLabel>
-                <select
-                  {...field}
-                  id="availability-weekday"
-                  aria-invalid={fieldState.invalid}
-                  className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm outline-none"
-                >
-                  {WEEKDAYS.map((day) => (
-                    <option key={day.value} value={day.value}>
-                      {day.label}
-                    </option>
-                  ))}
-                </select>
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-          <div className="flex gap-4">
-            <Controller
-              name="startTime"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} className="flex-1">
-                  <FieldLabel htmlFor="availability-start">Start</FieldLabel>
-                  <Input
-                    {...field}
-                    id="availability-start"
-                    type="time"
-                    aria-invalid={fieldState.invalid}
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-            <Controller
-              name="endTime"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} className="flex-1">
-                  <FieldLabel htmlFor="availability-end">End</FieldLabel>
-                  <Input
-                    {...field}
-                    id="availability-end"
-                    type="time"
-                    aria-invalid={fieldState.invalid}
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-          </div>
-          <Button type="submit" disabled={createMutation.isPending}>
-            {createMutation.isPending ? "Adding…" : "Add window"}
-          </Button>
-        </form>
-      </Form>
-
       {windowsQuery.isPending ? (
-        <p className="text-sm text-muted-foreground">Loading windows…</p>
+        <p className="text-sm text-muted-foreground">Loading availability…</p>
       ) : windowsQuery.isError ? (
         <div className="flex flex-col items-start gap-2">
           <p className="text-sm text-muted-foreground">
@@ -178,43 +218,78 @@ function AvailabilityManager() {
             Try again
           </Button>
         </div>
-      ) : windows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          No availability set yet. Add your first window above.
-        </p>
       ) : (
-        <div className="flex flex-col gap-4">
-          {WEEKDAYS.filter((day) => byWeekday.has(day.value)).map((day) => (
-            <Card key={day.value}>
-              <CardHeader>
-                <CardTitle>{day.label}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-2">
-                {(byWeekday.get(day.value) ?? []).map((window) => (
-                  <div
-                    key={window.id}
-                    className="flex items-center justify-between gap-2 text-sm"
-                  >
-                    <span>
-                      {window.startTime} – {window.endTime}
-                      {window.timezone !== "Africa/Accra"
-                        ? ` (${window.timezone})`
-                        : null}
+        <>
+          <div className="flex flex-col">
+            {WEEKDAYS.map((day) => (
+              <div
+                key={day.value}
+                className="flex gap-4 border-b py-3 last:border-b-0"
+              >
+                <div className="w-24 shrink-0 pt-1.5 text-sm font-medium">
+                  {day.label}
+                </div>
+                <div className="flex flex-1 flex-col gap-2">
+                  {current[day.value].length === 0 ? (
+                    <span className="pt-1.5 text-sm text-muted-foreground">
+                      Closed
                     </span>
+                  ) : (
+                    current[day.value].map((window) => (
+                      <div key={window.key} className="flex items-center gap-2">
+                        <Input
+                          type="time"
+                          value={window.start}
+                          onChange={(event) =>
+                            updateRow(day.value, window.key, {
+                              start: event.target.value,
+                            })
+                          }
+                          aria-label={`${day.label} start`}
+                          className="w-auto"
+                        />
+                        <span className="text-sm text-muted-foreground">–</span>
+                        <Input
+                          type="time"
+                          value={window.end}
+                          onChange={(event) =>
+                            updateRow(day.value, window.key, {
+                              end: event.target.value,
+                            })
+                          }
+                          aria-label={`${day.label} end`}
+                          className="w-auto"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeRow(day.value, window.key)}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ))
+                  )}
+                  <div>
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={deleteMutation.isPending}
-                      onClick={() => deleteMutation.mutate(window.id)}
+                      onClick={() => addRow(day.value)}
                     >
-                      Remove
+                      Add hours
                     </Button>
                   </div>
-                ))}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <Button
+            disabled={!dirty || saveMutation.isPending}
+            onClick={handleSave}
+          >
+            {saveMutation.isPending ? "Saving…" : "Save availability"}
+          </Button>
+        </>
       )}
     </div>
   );
