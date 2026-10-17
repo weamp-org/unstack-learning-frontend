@@ -41,6 +41,9 @@ export default function AdminSubjectsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Subject | null>(null);
   const [deleting, setDeleting] = useState<Subject | null>(null);
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "active" | "inactive"
+  >("all");
 
   const meQuery = useQuery({
     queryKey: ["me"],
@@ -135,7 +138,7 @@ export default function AdminSubjectsPage() {
           </CardHeader>
           <CardContent>
             <Button variant="outline" asChild>
-              <Link href="/">Go back home</Link>
+              <Link href="/">Go home</Link>
             </Button>
           </CardContent>
         </Card>
@@ -154,6 +157,18 @@ export default function AdminSubjectsPage() {
         <h1 className="text-3xl font-bold tracking-tight">Manage subjects</h1>
         <Button onClick={openCreate}>New subject</Button>
       </div>
+      <div className="flex gap-2">
+        {(["all", "active", "inactive"] as const).map((status) => (
+          <Button
+            key={status}
+            variant={statusFilter === status ? "default" : "outline"}
+            size="sm"
+            onClick={() => setStatusFilter(status)}
+          >
+            {status[0]?.toUpperCase() + status.slice(1)}
+          </Button>
+        ))}
+      </div>
 
       {subjectsQuery.isPending ? (
         <p className="text-sm text-muted-foreground">Loading subjects…</p>
@@ -166,57 +181,25 @@ export default function AdminSubjectsPage() {
             Try again
           </Button>
         </div>
-      ) : subjectsQuery.data.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          No subjects yet. Create the first one.
-        </p>
       ) : (
-        <ul className="flex flex-col gap-3">
-          {subjectsQuery.data.map((subject) => (
-            <li key={subject.id}>
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    {subject.name}
-                    {subject.isActive ? null : " (inactive)"}
-                  </CardTitle>
-                  {subject.description ? (
-                    <CardDescription>{subject.description}</CardDescription>
-                  ) : null}
-                </CardHeader>
-                <CardContent className="flex flex-wrap gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => openEdit(subject)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={updateMutation.isPending}
-                    onClick={() =>
-                      updateMutation.mutate({
-                        id: subject.id,
-                        input: { isActive: !subject.isActive },
-                      })
-                    }
-                  >
-                    {subject.isActive ? "Deactivate" : "Reactivate"}
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => setDeleting(subject)}
-                  >
-                    Delete
-                  </Button>
-                </CardContent>
-              </Card>
-            </li>
-          ))}
-        </ul>
+        <SubjectList
+          subjects={subjectsQuery.data.filter((subject) =>
+            statusFilter === "all"
+              ? true
+              : statusFilter === "active"
+                ? subject.isActive
+                : !subject.isActive,
+          )}
+          onEdit={openEdit}
+          onToggle={(subject) =>
+            updateMutation.mutate({
+              id: subject.id,
+              input: { isActive: !subject.isActive },
+            })
+          }
+          toggleDisabled={updateMutation.isPending}
+          onDelete={setDeleting}
+        />
       )}
 
       <Dialog
@@ -292,5 +275,71 @@ export default function AdminSubjectsPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+function SubjectList({
+  subjects,
+  onEdit,
+  onToggle,
+  toggleDisabled,
+  onDelete,
+}: {
+  subjects: Subject[];
+  onEdit: (subject: Subject) => void;
+  onToggle: (subject: Subject) => void;
+  toggleDisabled: boolean;
+  onDelete: (subject: Subject) => void;
+}) {
+  if (subjects.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        No subjects match this filter.
+      </p>
+    );
+  }
+
+  return (
+    <ul className="flex flex-col gap-3">
+      {subjects.map((subject) => (
+        <li key={subject.id}>
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                {subject.name}
+                {subject.isActive ? null : " (inactive)"}
+              </CardTitle>
+              {subject.description ? (
+                <CardDescription>{subject.description}</CardDescription>
+              ) : null}
+            </CardHeader>
+            <CardContent className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onEdit(subject)}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={toggleDisabled}
+                onClick={() => onToggle(subject)}
+              >
+                {subject.isActive ? "Deactivate" : "Reactivate"}
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => onDelete(subject)}
+              >
+                Delete
+              </Button>
+            </CardContent>
+          </Card>
+        </li>
+      ))}
+    </ul>
   );
 }
