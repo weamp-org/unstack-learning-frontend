@@ -32,22 +32,6 @@ export interface UpdateSubjectInput {
   isActive?: boolean;
 }
 
-export type UserRole = "STUDENT" | "TEACHER" | "ADMIN";
-
-export interface CurrentUser {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export async function fetchCurrentUser(): Promise<CurrentUser> {
-  const { data } = await api.get<CurrentUser>("/users/me");
-  return data;
-}
-
 export async function listSubjects(
   includeInactive = false,
 ): Promise<Subject[]> {
