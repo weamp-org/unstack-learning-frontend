@@ -11,7 +11,9 @@ import {
   availabilityErrorMessage,
   createAvailability,
   deleteAvailability,
+  formatDuration,
   listMyAvailability,
+  minutesBetween,
   WEEKDAYS,
 } from "@/lib/availability";
 
@@ -112,6 +114,17 @@ function AvailabilityManager() {
   const dirty =
     draft !== null &&
     WEEKDAYS.some((day) => !sameWindows(current[day.value], server[day.value]));
+
+  const weekMinutes = WEEKDAYS.reduce(
+    (sum, day) =>
+      sum +
+      current[day.value].reduce(
+        (daySum, window) =>
+          daySum + (minutesBetween(window.start, window.end) ?? 0),
+        0,
+      ),
+    0,
+  );
 
   function updateRow(
     weekday: number,
@@ -221,68 +234,95 @@ function AvailabilityManager() {
       ) : (
         <>
           <div className="flex flex-col">
-            {WEEKDAYS.map((day) => (
-              <div
-                key={day.value}
-                className="flex gap-4 border-b py-3 last:border-b-0"
-              >
-                <div className="w-24 shrink-0 pt-1.5 text-sm font-medium">
-                  {day.label}
-                </div>
-                <div className="flex flex-1 flex-col gap-2">
-                  {current[day.value].length === 0 ? (
-                    <span className="pt-1.5 text-sm text-muted-foreground">
-                      Closed
-                    </span>
-                  ) : (
-                    current[day.value].map((window) => (
-                      <div key={window.key} className="flex items-center gap-2">
-                        <Input
-                          type="time"
-                          value={window.start}
-                          onChange={(event) =>
-                            updateRow(day.value, window.key, {
-                              start: event.target.value,
-                            })
-                          }
-                          aria-label={`${day.label} start`}
-                          className="w-auto"
-                        />
-                        <span className="text-sm text-muted-foreground">–</span>
-                        <Input
-                          type="time"
-                          value={window.end}
-                          onChange={(event) =>
-                            updateRow(day.value, window.key, {
-                              end: event.target.value,
-                            })
-                          }
-                          aria-label={`${day.label} end`}
-                          className="w-auto"
-                        />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeRow(day.value, window.key)}
+            {WEEKDAYS.map((day) => {
+              const dayMinutes = current[day.value].reduce(
+                (sum, window) =>
+                  sum + (minutesBetween(window.start, window.end) ?? 0),
+                0,
+              );
+              return (
+                <div
+                  key={day.value}
+                  className="flex gap-4 border-b py-3 last:border-b-0"
+                >
+                  <div className="w-24 shrink-0 pt-1.5 text-sm font-medium">
+                    {day.label}
+                    {dayMinutes > 0 ? (
+                      <span className="font-normal text-muted-foreground">
+                        {" "}
+                        · {formatDuration(dayMinutes)}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-1 flex-col gap-2">
+                    {current[day.value].length === 0 ? (
+                      <span className="pt-1.5 text-sm text-muted-foreground">
+                        Closed
+                      </span>
+                    ) : (
+                      current[day.value].map((window) => (
+                        <div
+                          key={window.key}
+                          className="flex items-center gap-2"
                         >
-                          Remove
-                        </Button>
-                      </div>
-                    ))
-                  )}
-                  <div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => addRow(day.value)}
-                    >
-                      Add hours
-                    </Button>
+                          <Input
+                            type="time"
+                            value={window.start}
+                            onChange={(event) =>
+                              updateRow(day.value, window.key, {
+                                start: event.target.value,
+                              })
+                            }
+                            aria-label={`${day.label} start`}
+                            className="w-auto"
+                          />
+                          <span className="text-sm text-muted-foreground">
+                            –
+                          </span>
+                          <Input
+                            type="time"
+                            value={window.end}
+                            onChange={(event) =>
+                              updateRow(day.value, window.key, {
+                                end: event.target.value,
+                              })
+                            }
+                            aria-label={`${day.label} end`}
+                            className="w-auto"
+                          />
+                          <WindowDuration
+                            start={window.start}
+                            end={window.end}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeRow(day.value, window.key)}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      ))
+                    )}
+                    <div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => addRow(day.value)}
+                      >
+                        Add hours
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
+          {weekMinutes > 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Total {formatDuration(weekMinutes)} / week
+            </p>
+          ) : null}
           <Button
             disabled={!dirty || saveMutation.isPending}
             onClick={handleSave}
@@ -292,5 +332,15 @@ function AvailabilityManager() {
         </>
       )}
     </div>
+  );
+}
+
+function WindowDuration({ start, end }: { start: string; end: string }) {
+  const minutes = minutesBetween(start, end);
+  if (minutes === null) return null;
+  return (
+    <span className="text-sm text-muted-foreground">
+      {formatDuration(minutes)}
+    </span>
   );
 }

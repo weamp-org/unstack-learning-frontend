@@ -22,13 +22,13 @@ export const WEEKDAYS = [
   { value: 0, label: "Sunday" },
 ] as const;
 
-const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
+const TIME_PATTERN = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
 export const availabilityFormSchema = z
   .object({
     weekday: z.coerce.number().min(0).max(6),
-    startTime: z.string().regex(timePattern, "Start must be HH:MM (24-hour)."),
-    endTime: z.string().regex(timePattern, "End must be HH:MM (24-hour)."),
+    startTime: z.string().regex(TIME_PATTERN, "Start must be HH:MM (24-hour)."),
+    endTime: z.string().regex(TIME_PATTERN, "End must be HH:MM (24-hour)."),
   })
   .refine((values) => values.endTime > values.startTime, {
     message: "End must be after start (overnight windows aren't supported).",
@@ -86,4 +86,26 @@ export function availabilityErrorMessage(
     }
   }
   return fallback;
+}
+
+/** Minutes between two HH:MM times, or null when invalid or not positive. */
+export function minutesBetween(start: string, end: string): number | null {
+  const toMinutes = (time: string): number | null => {
+    const match = TIME_PATTERN.exec(time);
+    if (!match) return null;
+    return Number(match[1]) * 60 + Number(match[2]);
+  };
+  const from = toMinutes(start);
+  const to = toMinutes(end);
+  if (from === null || to === null || to <= from) return null;
+  return to - from;
+}
+
+/** Compact duration label: "45m", "2h", "1h 30m". */
+export function formatDuration(totalMinutes: number): string {
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours === 0) return `${minutes}m`;
+  if (minutes === 0) return `${hours}h`;
+  return `${hours}h ${minutes}m`;
 }
