@@ -62,6 +62,26 @@ export async function deleteSubject(id: string): Promise<Subject> {
   return data;
 }
 
+export interface TeachingSubject {
+  teacherId: string;
+  subjectId: string;
+  subject: Subject;
+}
+
+export async function getMyTeachingSubjects(): Promise<TeachingSubject[]> {
+  const { data } = await api.get<TeachingSubject[]>("/teachers/me/subjects");
+  return data;
+}
+
+export async function setMyTeachingSubjects(
+  subjectIds: string[],
+): Promise<TeachingSubject[]> {
+  const { data } = await api.put<TeachingSubject[]>("/teachers/me/subjects", {
+    subjectIds,
+  });
+  return data;
+}
+
 export function subjectErrorMessage(error: unknown, fallback: string): string {
   if (isAxiosError(error)) {
     if (error.response?.status === 409) {
