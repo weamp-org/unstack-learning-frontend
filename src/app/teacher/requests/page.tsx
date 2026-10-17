@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { RequireRoles } from "@/components/require-roles";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,40 +54,36 @@ function RequestQueue() {
         <ul className="flex flex-col gap-3">
           {queueQuery.data.map((item) => (
             <li key={item.id}>
-              <Card>
-                <CardHeader>
-                  <CardTitle>{item.topic}</CardTitle>
-                  <CardDescription>
-                    {item.subject.name} · {item.learner?.name ?? "Learner"} ·{" "}
-                    {new Date(item.createdAt).toLocaleDateString()}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-3">
-                  {item.details ? (
-                    <p className="whitespace-pre-wrap text-sm">
-                      {item.details}
-                    </p>
-                  ) : null}
-                  {item.links.length > 0 ? (
-                    <div className="flex flex-col gap-1">
-                      {item.links.map((link) => (
-                        <a
-                          key={link.id}
-                          href={link.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="break-all text-sm font-medium underline underline-offset-4"
-                        >
-                          {link.url}
-                        </a>
-                      ))}
-                    </div>
-                  ) : null}
-                  <p className="text-xs text-muted-foreground">
-                    Accepting requests arrives next.
-                  </p>
-                </CardContent>
-              </Card>
+              <Link href={`/requests/${item.id}`}>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{item.topic}</CardTitle>
+                    <CardDescription>
+                      {item.subject.name} · {item.learner?.name ?? "Learner"} ·{" "}
+                      {new Date(item.createdAt).toLocaleDateString()}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex flex-col gap-3">
+                    {item.details ? (
+                      <p className="whitespace-pre-wrap text-sm">
+                        {item.details}
+                      </p>
+                    ) : null}
+                    {item.links.length > 0 ? (
+                      <div className="flex flex-col gap-1">
+                        {item.links.map((link) => (
+                          <span
+                            key={link.id}
+                            className="break-all text-sm font-medium underline underline-offset-4"
+                          >
+                            {link.url}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              </Link>
             </li>
           ))}
         </ul>

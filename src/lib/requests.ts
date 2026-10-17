@@ -16,11 +16,27 @@ export interface HelpRequest {
   subjectId: string;
   topic: string;
   details: string | null;
+  status: HelpRequestStatus;
+  teacherId: string | null;
   createdAt: string;
   updatedAt: string;
   subject: Subject;
   links: HelpLink[];
   learner?: { id: string; name: string };
+  teacher?: { id: string; name: string } | null;
+  session?: HelpSession | null;
+}
+
+export type HelpRequestStatus = "OPEN" | "ACCEPTED" | "CLOSED";
+
+export interface HelpSession {
+  id: string;
+  requestId: string;
+  sessionUrl: string | null;
+  scheduledAt: string | null;
+  source: "MANUAL" | "GOOGLE";
+  createdAt: string;
+  updatedAt: string;
 }
 
 const linkSchema = z.object({
@@ -73,6 +89,31 @@ export async function getHelpRequest(id: string): Promise<HelpRequest> {
 
 export async function listRequestQueue(): Promise<HelpRequest[]> {
   const { data } = await api.get<HelpRequest[]>("/requests/queue");
+  return data;
+}
+
+export async function acceptHelpRequest(
+  id: string,
+  input?: { sessionUrl?: string; scheduledAt?: string },
+): Promise<HelpRequest> {
+  const { data } = await api.patch<HelpRequest>(
+    `/requests/${id}/accept`,
+    input ?? {},
+  );
+  return data;
+}
+
+export async function declineHelpRequest(
+  id: string,
+): Promise<{ id: string; declined: boolean }> {
+  const { data } = await api.patch<{ id: string; declined: boolean }>(
+    `/requests/${id}/decline`,
+  );
+  return data;
+}
+
+export async function closeHelpRequest(id: string): Promise<HelpRequest> {
+  const { data } = await api.patch<HelpRequest>(`/requests/${id}/close`);
   return data;
 }
 
