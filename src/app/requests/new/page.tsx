@@ -50,7 +50,7 @@ export default function NewHelpRequestPage() {
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-8">
       <h1 className="text-3xl font-bold tracking-tight">Request help</h1>
       <p className="text-muted-foreground">
-        Describe what you&apos;re stuck on so a teacher can prepare to help you.
+        Describe what you&apos;re stuck on so a teacher can help you.
       </p>
 
       <Form {...form}>
@@ -109,9 +109,6 @@ export default function NewHelpRequestPage() {
                   placeholder="e.g. Differentiation"
                   aria-invalid={fieldState.invalid}
                 />
-                <p className="text-xs text-muted-foreground">
-                  The curriculum topic you need help with.
-                </p>
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}
@@ -123,9 +120,7 @@ export default function NewHelpRequestPage() {
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="request-details">
-                  Tell us more (optional if you add links)
-                </FieldLabel>
+                <FieldLabel htmlFor="request-details">Tell us more</FieldLabel>
                 <Textarea
                   {...field}
                   id="request-details"
@@ -141,7 +136,7 @@ export default function NewHelpRequestPage() {
           />
 
           <div className="flex flex-col gap-2">
-            <span className="text-sm font-medium">Links (optional, max 3)</span>
+            <span className="text-sm font-medium">Links (max 3)</span>
             {links.fields.map((item, index) => (
               <div key={item.id} className="flex gap-2">
                 <Controller
