@@ -1,7 +1,6 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Markdown } from "@/components/markdown";
 import { RequireRoles } from "@/components/require-roles";
 import { Button } from "@/components/ui/button";
 import {
@@ -63,7 +62,11 @@ function RequestQueue() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-3">
-                  {item.details ? <Markdown>{item.details}</Markdown> : null}
+                  {item.details ? (
+                    <p className="whitespace-pre-wrap text-sm">
+                      {item.details}
+                    </p>
+                  ) : null}
                   {item.links.length > 0 ? (
                     <div className="flex flex-col gap-1">
                       {item.links.map((link) => (
@@ -72,9 +75,9 @@ function RequestQueue() {
                           href={link.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm font-medium underline underline-offset-4"
+                          className="break-all text-sm font-medium underline underline-offset-4"
                         >
-                          {link.label || link.url}
+                          {link.url}
                         </a>
                       ))}
                     </div>

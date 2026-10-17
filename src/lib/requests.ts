@@ -8,7 +8,6 @@ export interface HelpLink {
   id: string;
   requestId: string;
   url: string;
-  label: string | null;
 }
 
 export interface HelpRequest {
@@ -26,7 +25,6 @@ export interface HelpRequest {
 
 const linkSchema = z.object({
   url: z.string().url("Enter a valid URL.").max(2048, "URL is too long."),
-  label: z.string().max(120, "Label must be 120 characters or fewer."),
 });
 
 export const helpRequestFormSchema = z
@@ -53,7 +51,7 @@ export interface CreateHelpRequestInput {
   subjectId: string;
   topic: string;
   details?: string;
-  links?: { url: string; label?: string }[];
+  links?: { url: string }[];
 }
 
 export async function createHelpRequest(

@@ -3,7 +3,6 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { use } from "react";
-import { Markdown } from "@/components/markdown";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -58,7 +57,9 @@ export default function HelpRequestDetailPage({
                 <CardTitle>Details</CardTitle>
               </CardHeader>
               <CardContent>
-                <Markdown>{requestQuery.data.details}</Markdown>
+                <p className="whitespace-pre-wrap text-sm">
+                  {requestQuery.data.details}
+                </p>
               </CardContent>
             </Card>
           ) : null}
@@ -70,21 +71,15 @@ export default function HelpRequestDetailPage({
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
                 {requestQuery.data.links.map((link) => (
-                  <div key={link.id} className="flex flex-col">
-                    <a
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm font-medium underline underline-offset-4"
-                    >
-                      {link.label || link.url}
-                    </a>
-                    {link.label ? (
-                      <span className="text-xs text-muted-foreground">
-                        {link.url}
-                      </span>
-                    ) : null}
-                  </div>
+                  <a
+                    key={link.id}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium break-all underline underline-offset-4"
+                  >
+                    {link.url}
+                  </a>
                 ))}
               </CardContent>
             </Card>

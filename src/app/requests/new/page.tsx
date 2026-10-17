@@ -62,7 +62,6 @@ export default function NewHelpRequestPage() {
               details: values.details?.trim() ? values.details : undefined,
               links: values.links.map((link) => ({
                 url: link.url,
-                label: link.label.trim() ? link.label : undefined,
               })),
             }),
           )}
@@ -107,9 +106,12 @@ export default function NewHelpRequestPage() {
                 <Input
                   {...field}
                   id="request-topic"
-                  placeholder="e.g. Integration by parts keeps failing"
+                  placeholder="e.g. Differentiation"
                   aria-invalid={fieldState.invalid}
                 />
+                <p className="text-xs text-muted-foreground">
+                  The curriculum topic you need help with.
+                </p>
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}
@@ -131,9 +133,6 @@ export default function NewHelpRequestPage() {
                   placeholder="What have you tried? Where exactly do you get stuck?"
                   aria-invalid={fieldState.invalid}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Markdown supported: **bold**, lists, `code`.
-                </p>
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}
@@ -144,43 +143,16 @@ export default function NewHelpRequestPage() {
           <div className="flex flex-col gap-2">
             <span className="text-sm font-medium">Links (optional, max 3)</span>
             {links.fields.map((item, index) => (
-              <div key={item.id} className="flex flex-col gap-2">
-                <div className="flex gap-2">
-                  <Controller
-                    name={`links.${index}.url`}
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <div className="flex flex-1 flex-col gap-1">
-                        <Input
-                          {...field}
-                          placeholder="https://…"
-                          aria-label={`Link ${index + 1} URL`}
-                          aria-invalid={fieldState.invalid}
-                        />
-                        {fieldState.invalid && (
-                          <FieldError errors={[fieldState.error]} />
-                        )}
-                      </div>
-                    )}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => links.remove(index)}
-                  >
-                    Remove
-                  </Button>
-                </div>
+              <div key={item.id} className="flex gap-2">
                 <Controller
-                  name={`links.${index}.label`}
+                  name={`links.${index}.url`}
                   control={form.control}
                   render={({ field, fieldState }) => (
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-1 flex-col gap-1">
                       <Input
                         {...field}
-                        placeholder="What should the teacher look at? e.g. Lost at 6:12"
-                        aria-label={`Link ${index + 1} label`}
+                        placeholder="https://…"
+                        aria-label={`Link ${index + 1} URL`}
                         aria-invalid={fieldState.invalid}
                       />
                       {fieldState.invalid && (
@@ -189,6 +161,14 @@ export default function NewHelpRequestPage() {
                     </div>
                   )}
                 />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => links.remove(index)}
+                >
+                  Remove
+                </Button>
               </div>
             ))}
             {links.fields.length < 3 ? (
@@ -197,7 +177,7 @@ export default function NewHelpRequestPage() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => links.append({ url: "", label: "" })}
+                  onClick={() => links.append({ url: "" })}
                 >
                   Add link
                 </Button>
