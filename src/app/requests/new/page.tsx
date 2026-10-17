@@ -67,7 +67,7 @@ export default function NewHelpRequestPage() {
           )}
           className="flex flex-col gap-4"
         >
-          <FormRequiredNote extra="Provide details or at least one link." />
+          <FormRequiredNote />
           <Controller
             name="subjectId"
             control={form.control}
