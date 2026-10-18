@@ -43,23 +43,19 @@ const linkSchema = z.object({
   url: z.string().url("Enter a valid URL.").max(2048, "URL is too long."),
 });
 
-export const helpRequestFormSchema = z
-  .object({
-    subjectId: z.string().min(1, "Choose a subject."),
-    topic: z
-      .string()
-      .min(1, "Give your request a topic.")
-      .max(120, "Topic must be 120 characters or fewer."),
-    details: z
-      .string()
-      .max(5000, "Details must be 5000 characters or fewer.")
-      .optional(),
-    links: z.array(linkSchema).max(3, "At most 3 links."),
-  })
-  .refine(
-    (values) => values.details?.trim() || values.links.length > 0,
-    "Add details or at least one link.",
-  );
+export const helpRequestFormSchema = z.object({
+  subjectId: z.string().min(1, "Choose a subject."),
+  topic: z
+    .string()
+    .min(1, "Give your request a topic.")
+    .max(120, "Topic must be 120 characters or fewer."),
+  details: z
+    .string()
+    .trim()
+    .min(1, "Tell us a bit more about what you're stuck on.")
+    .max(5000, "Details must be 5000 characters or fewer."),
+  links: z.array(linkSchema).max(3, "At most 3 links."),
+});
 
 export type HelpRequestFormValues = z.infer<typeof helpRequestFormSchema>;
 

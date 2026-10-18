@@ -125,7 +125,9 @@ export default function NewHelpRequestPage() {
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="request-details">Tell us more</FieldLabel>
+                <FieldLabel htmlFor="request-details">
+                  Tell us more <RequiredMark />
+                </FieldLabel>
                 <Textarea
                   {...field}
                   id="request-details"
@@ -184,10 +186,6 @@ export default function NewHelpRequestPage() {
               </div>
             ) : null}
           </div>
-
-          {form.formState.errors.root ? (
-            <FieldError errors={[form.formState.errors.root]} />
-          ) : null}
 
           <Button type="submit" disabled={createMutation.isPending}>
             {createMutation.isPending ? "Sending…" : "Send request"}
