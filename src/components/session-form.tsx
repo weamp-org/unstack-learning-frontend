@@ -9,6 +9,7 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { toDateTimeLocal } from "@/lib/requests";
 
 const sessionDetailsSchema = z.object({
   sessionUrl: z
@@ -89,6 +90,7 @@ export function SessionDetailsForm({
                 {...field}
                 id="session-time"
                 type="datetime-local"
+                min={toDateTimeLocal(new Date())}
                 aria-invalid={fieldState.invalid}
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}

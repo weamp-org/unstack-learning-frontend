@@ -1,5 +1,4 @@
 import { currentUser } from "@clerk/nextjs/server";
-import Link from "next/link";
 
 export default async function Home() {
   const user = await currentUser();
@@ -9,40 +8,10 @@ export default async function Home() {
       <h1 className="text-4xl font-bold tracking-tight">Unstack Learning</h1>
       <p className="text-xl font-medium">Get unstuck. Keep learning.</p>
       <p className="max-w-xl text-lg text-muted-foreground">
-        Free academic help — work through difficult concepts and questions with
-        someone who can explain, so you can continue learning independently.
-        Requesting help isn&apos;t available yet; we&apos;re building the core
-        experience now.
+        Free academic help — pick a subject, describe what you&apos;re stuck on,
+        and a teacher will review your request and arrange a live session to
+        work through it with you.
       </p>
-      <nav className="flex items-center gap-4 text-sm font-medium">
-        <Link href="/subjects" className="underline underline-offset-4">
-          Browse subjects
-        </Link>
-        <Link href="/admin/subjects" className="underline underline-offset-4">
-          Manage subjects
-        </Link>
-        <Link href="/admin/users" className="underline underline-offset-4">
-          Manage users
-        </Link>
-        <Link href="/teacher/subjects" className="underline underline-offset-4">
-          Your subjects
-        </Link>
-        <Link
-          href="/teacher/availability"
-          className="underline underline-offset-4"
-        >
-          Your availability
-        </Link>
-        <Link href="/requests/new" className="underline underline-offset-4">
-          Request help
-        </Link>
-        <Link href="/requests/me" className="underline underline-offset-4">
-          My requests
-        </Link>
-        <Link href="/teacher/requests" className="underline underline-offset-4">
-          Review queue
-        </Link>
-      </nav>
       {user ? (
         <p className="text-sm text-muted-foreground">
           Signed in as{" "}
@@ -53,7 +22,7 @@ export default async function Home() {
         </p>
       ) : (
         <p className="text-sm text-muted-foreground">
-          Sign in to be ready when help requests open.
+          Sign in to request help.
         </p>
       )}
     </div>

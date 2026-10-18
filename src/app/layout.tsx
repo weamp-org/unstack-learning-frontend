@@ -10,6 +10,7 @@ import { Geist, Geist_Mono, Inter, Manrope } from "next/font/google";
 import Link from "next/link";
 
 import { QueryProvider } from "@/components/query-provider";
+import { SiteNav } from "@/components/site-nav";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Toaster } from "@/components/ui/sonner";
@@ -69,14 +70,15 @@ export default function RootLayout({
           <ClerkProvider>
             <QueryProvider>
               <AuthTokenSetter>
-                <header className="flex items-center justify-end gap-4 p-4">
-                  <nav className="flex items-center gap-4 mr-auto">
+                <header className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2 p-4">
+                  <nav className="mr-auto flex flex-wrap items-center gap-x-4 gap-y-2">
                     <Link
                       href="/"
                       className="text-sm font-medium hover:underline"
                     >
                       Unstack Learning
                     </Link>
+                    <SiteNav />
                   </nav>
                   <ThemeToggle />
                   <Show when="signed-out">
