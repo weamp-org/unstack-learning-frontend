@@ -10,10 +10,14 @@ import { Input } from "@/components/ui/input";
 import {
   availabilityErrorMessage,
   createAvailability,
+  createOverride,
   deleteAvailability,
+  deleteOverride,
   formatDuration,
   listMyAvailability,
+  listMyOverrides,
   minutesBetween,
+  overrideErrorMessage,
   WEEKDAYS,
 } from "@/lib/availability";
 
@@ -331,6 +335,8 @@ function AvailabilityManager() {
           </Button>
         </>
       )}
+
+      <OverrideExceptions />
     </div>
   );
 }
@@ -342,5 +348,166 @@ function WindowDuration({ start, end }: { start: string; end: string }) {
     <span className="text-sm text-muted-foreground">
       {formatDuration(minutes)}
     </span>
+  );
+}
+
+function todayLocal(): string {
+  const now = new Date();
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
+function formatOverrideDate(date: string): string {
+  // Noon anchor avoids the date shifting under the browser timezone.
+  return new Date(`${date}T12:00:00`).toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function OverrideExceptions() {
+  const queryClient = useQueryClient();
+  const [date, setDate] = useState(todayLocal());
+  const [start, setStart] = useState("09:00");
+  const [end, setEnd] = useState("17:00");
+  const [kind, setKind] = useState<"AVAILABLE" | "UNAVAILABLE">("UNAVAILABLE");
+
+  const overridesQuery = useQuery({
+    queryKey: ["availability", "overrides"],
+    queryFn: listMyOverrides,
+    retry: false,
+  });
+
+  function invalidate() {
+    queryClient.invalidateQueries({ queryKey: ["availability"] });
+  }
+
+  const createMutation = useMutation({
+    mutationFn: () =>
+      createOverride({ date, startTime: start, endTime: end, kind }),
+    onSuccess: () => {
+      invalidate();
+      toast.success("Exception added.");
+    },
+    onError: (error) =>
+      toast.error(overrideErrorMessage(error, "Could not add exception.")),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteOverride(id),
+    onSuccess: () => {
+      invalidate();
+      toast.success("Exception removed.");
+    },
+    onError: (error) =>
+      toast.error(overrideErrorMessage(error, "Could not remove exception.")),
+  });
+
+  return (
+    <div className="flex flex-col gap-3 pt-2">
+      <div>
+        <h2 className="text-xl font-bold tracking-tight">One-off exceptions</h2>
+        <p className="text-muted-foreground">
+          Busy during normally-open hours, or free outside them? Add a dated
+          exception — it beats the weekly pattern for that day only, and
+          disappears afterwards.
+        </p>
+      </div>
+
+      {overridesQuery.isPending ? (
+        <p className="text-sm text-muted-foreground">Loading exceptions…</p>
+      ) : overridesQuery.isError ? (
+        <div className="flex flex-col items-start gap-2">
+          <p className="text-sm text-muted-foreground">
+            Couldn&apos;t load exceptions.
+          </p>
+          <Button variant="outline" onClick={() => overridesQuery.refetch()}>
+            Try again
+          </Button>
+        </div>
+      ) : overridesQuery.data.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          No exceptions. Your weekly hours apply every day.
+        </p>
+      ) : (
+        <div className="flex flex-col">
+          {overridesQuery.data.map((override) => (
+            <div
+              key={override.id}
+              className="flex items-center gap-2 border-b py-2 last:border-b-0"
+            >
+              <span className="text-sm font-medium">
+                {formatOverrideDate(override.date)}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {override.startTime} – {override.endTime}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {override.kind === "AVAILABLE" ? "Available" : "Unavailable"}
+              </span>
+              <WindowDuration
+                start={override.startTime}
+                end={override.endTime}
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => deleteMutation.mutate(override.id)}
+              >
+                Remove
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Input
+          type="date"
+          value={date}
+          min={todayLocal()}
+          onChange={(event) => setDate(event.target.value)}
+          aria-label="Exception date"
+          className="w-auto"
+        />
+        <Input
+          type="time"
+          value={start}
+          onChange={(event) => setStart(event.target.value)}
+          aria-label="Exception start"
+          className="w-auto"
+        />
+        <span className="text-sm text-muted-foreground">–</span>
+        <Input
+          type="time"
+          value={end}
+          onChange={(event) => setEnd(event.target.value)}
+          aria-label="Exception end"
+          className="w-auto"
+        />
+        <select
+          value={kind}
+          onChange={(event) =>
+            setKind(
+              event.target.value === "AVAILABLE" ? "AVAILABLE" : "UNAVAILABLE",
+            )
+          }
+          aria-label="Exception kind"
+          className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm outline-none"
+        >
+          <option value="UNAVAILABLE">Unavailable</option>
+          <option value="AVAILABLE">Available</option>
+        </select>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={createMutation.isPending}
+          onClick={() => createMutation.mutate()}
+        >
+          {createMutation.isPending ? "Adding…" : "Add exception"}
+        </Button>
+      </div>
+    </div>
   );
 }

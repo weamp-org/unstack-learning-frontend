@@ -72,6 +72,68 @@ export async function deleteAvailability(
   return data;
 }
 
+export type AvailabilityOverrideKind = "AVAILABLE" | "UNAVAILABLE";
+
+export interface AvailabilityOverride {
+  id: string;
+  teacherId: string;
+  /** Calendar date the exception applies to, YYYY-MM-DD. */
+  date: string;
+  startTime: string;
+  endTime: string;
+  timezone: string;
+  kind: AvailabilityOverrideKind;
+}
+
+export async function listMyOverrides(): Promise<AvailabilityOverride[]> {
+  const { data } = await api.get<AvailabilityOverride[]>(
+    "/teachers/me/overrides",
+  );
+  return data;
+}
+
+export async function createOverride(input: {
+  date: string;
+  startTime: string;
+  endTime: string;
+  timezone?: string;
+  kind: AvailabilityOverrideKind;
+}): Promise<AvailabilityOverride> {
+  const { data } = await api.post<AvailabilityOverride>(
+    "/teachers/me/overrides",
+    {
+      ...input,
+      timezone:
+        input.timezone?.trim() === "" || input.timezone === undefined
+          ? undefined
+          : input.timezone.trim(),
+    },
+  );
+  return data;
+}
+
+export async function deleteOverride(
+  id: string,
+): Promise<AvailabilityOverride> {
+  const { data } = await api.delete<AvailabilityOverride>(
+    `/teachers/me/overrides/${id}`,
+  );
+  return data;
+}
+
+export function overrideErrorMessage(error: unknown, fallback: string): string {
+  if (isAxiosError(error)) {
+    if (error.response?.status === 409) {
+      return "That overlaps an existing exception.";
+    }
+    const message = error.response?.data as { message?: unknown } | undefined;
+    if (typeof message?.message === "string") {
+      return message.message;
+    }
+  }
+  return fallback;
+}
+
 export function availabilityErrorMessage(
   error: unknown,
   fallback: string,
