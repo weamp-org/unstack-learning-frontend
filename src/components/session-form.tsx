@@ -11,15 +11,25 @@ import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toDateTimeLocal } from "@/lib/requests";
 
-const sessionDetailsSchema = z.object({
-  sessionUrl: z
-    .string()
-    .url("Enter a valid URL.")
-    .max(2048, "URL is too long.")
-    .or(z.literal(""))
-    .optional(),
-  scheduledAt: z.string().optional(),
-});
+const sessionDetailsSchema = z
+  .object({
+    sessionUrl: z
+      .string()
+      .url("Enter a valid URL.")
+      .max(2048, "URL is too long.")
+      .or(z.literal(""))
+      .optional(),
+    scheduledAt: z.string().optional(),
+  })
+  .refine(
+    (values) => {
+      if (!values.scheduledAt) return true;
+      const at = new Date(values.scheduledAt);
+      if (Number.isNaN(at.getTime())) return false;
+      return at.getTime() > Date.now();
+    },
+    { message: "Session time must be in the future.", path: ["scheduledAt"] },
+  );
 
 export type SessionDetailsValues = z.infer<typeof sessionDetailsSchema>;
 
@@ -73,9 +83,13 @@ export function SessionDetailsForm({
               <Input
                 {...field}
                 id="session-url"
-                placeholder="https://meet.google.com/…"
+                placeholder="https://…"
                 aria-invalid={fieldState.invalid}
               />
+              <p className="text-muted-foreground text-sm">
+                Paste a link from any platform (Zoom, Meet, etc). Links are
+                added by hand.
+              </p>
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}

@@ -1,7 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -21,9 +23,14 @@ export default function SubjectsPage() {
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-8">
       <h1 className="text-3xl font-bold tracking-tight">Subjects</h1>
       <p className="text-muted-foreground">
-        Subjects Unstack Learning can help with. Requesting help isn&apos;t
-        available yet.
+        Subjects Unstack Learning can help with. Pick one to request help and
+        meet a teacher on any meeting platform.
       </p>
+      <div>
+        <Button asChild>
+          <Link href="/requests/new">Request help</Link>
+        </Button>
+      </div>
 
       {isPending ? (
         <p className="text-sm text-muted-foreground">Loading subjects…</p>

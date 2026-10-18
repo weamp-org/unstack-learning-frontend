@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { RequireRoles } from "@/components/require-roles";
 import { FormRequiredNote, RequiredMark } from "@/components/required-mark";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
@@ -20,6 +21,14 @@ import {
 import { listSubjects } from "@/lib/subjects";
 
 export default function NewHelpRequestPage() {
+  return (
+    <RequireRoles roles={["STUDENT", "TEACHER", "ADMIN"]}>
+      <NewRequestForm />
+    </RequireRoles>
+  );
+}
+
+function NewRequestForm() {
   const router = useRouter();
   const queryClient = useQueryClient();
 

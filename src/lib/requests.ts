@@ -25,6 +25,7 @@ export interface HelpRequest {
   learner?: { id: string; name: string };
   teacher?: { id: string; name: string } | null;
   session?: HelpSession | null;
+  feedback?: HelpFeedback | null;
 }
 
 export type HelpRequestStatus = "OPEN" | "ACCEPTED" | "CLOSED";
@@ -34,7 +35,18 @@ export interface HelpSession {
   requestId: string;
   sessionUrl: string | null;
   scheduledAt: string | null;
-  source: "MANUAL" | "GOOGLE";
+  // Server keeps MANUAL|GOOGLE for history; links are manual until further
+  // notice — any meeting platform works.
+  source: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface HelpFeedback {
+  id: string;
+  requestId: string;
+  rating: number;
+  comment: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -112,6 +124,44 @@ export async function closeHelpRequest(id: string): Promise<HelpRequest> {
   const { data } = await api.patch<HelpRequest>(`/requests/${id}/close`);
   return data;
 }
+
+export async function updateHelpRequest(
+  id: string,
+  input: { topic?: string; details?: string; links?: { url: string }[] },
+): Promise<HelpRequest> {
+  const { data } = await api.patch<HelpRequest>(`/requests/${id}`, input);
+  return data;
+}
+
+export async function upsertFeedback(
+  id: string,
+  input: { rating: number; comment?: string },
+): Promise<HelpFeedback> {
+  const { data } = await api.post<HelpFeedback>(
+    `/requests/${id}/feedback`,
+    input,
+  );
+  return data;
+}
+
+export async function getFeedback(id: string): Promise<HelpFeedback> {
+  const { data } = await api.get<HelpFeedback>(`/requests/${id}/feedback`);
+  return data;
+}
+
+export const feedbackFormSchema = z.object({
+  rating: z
+    .number({ message: "Choose a rating." })
+    .int()
+    .min(1, "Rating must be at least 1.")
+    .max(5, "Rating must be at most 5."),
+  comment: z
+    .string()
+    .max(1000, "Comment must be 1000 characters or fewer.")
+    .optional(),
+});
+
+export type FeedbackFormValues = z.infer<typeof feedbackFormSchema>;
 
 export async function updateHelpSession(
   id: string,

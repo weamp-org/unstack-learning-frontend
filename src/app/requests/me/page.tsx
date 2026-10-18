@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
+import { RequireRoles } from "@/components/require-roles";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,7 +13,21 @@ import {
 } from "@/components/ui/card";
 import { listMyHelpRequests } from "@/lib/requests";
 
+const STATUS_LABELS: Record<string, string> = {
+  OPEN: "Awaiting review",
+  ACCEPTED: "Accepted",
+  CLOSED: "Closed",
+};
+
 export default function MyHelpRequestsPage() {
+  return (
+    <RequireRoles roles={["STUDENT", "TEACHER", "ADMIN"]}>
+      <MyRequests />
+    </RequireRoles>
+  );
+}
+
+function MyRequests() {
   const requestsQuery = useQuery({
     queryKey: ["requests", "mine"],
     queryFn: listMyHelpRequests,
@@ -40,9 +55,15 @@ export default function MyHelpRequestsPage() {
           </Button>
         </div>
       ) : requestsQuery.data.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          No requests yet. Ask for help when you&apos;re stuck.
-        </p>
+        <div className="flex flex-col items-start gap-3">
+          <p className="text-sm text-muted-foreground">
+            No requests yet. Ask for help when you&apos;re stuck — a teacher
+            will review it and share a meeting link.
+          </p>
+          <Button asChild>
+            <Link href="/requests/new">Request help</Link>
+          </Button>
+        </div>
       ) : (
         <ul className="flex flex-col gap-3">
           {requestsQuery.data.map((item) => (
@@ -50,10 +71,21 @@ export default function MyHelpRequestsPage() {
               <Link href={`/requests/${item.id}`}>
                 <Card>
                   <CardHeader>
-                    <CardTitle>{item.topic}</CardTitle>
+                    <div className="flex items-center justify-between gap-2">
+                      <CardTitle>{item.topic}</CardTitle>
+                      <span className="rounded-full border px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                        {STATUS_LABELS[item.status] ?? item.status}
+                      </span>
+                    </div>
                     <CardDescription>
                       {item.subject.name} ·{" "}
                       {new Date(item.createdAt).toLocaleDateString()}
+                      {item.status === "ACCEPTED"
+                        ? ` · Accepted${item.teacher?.name ? ` by ${item.teacher.name}` : ""}${item.session?.scheduledAt ? ` · ${new Date(item.session.scheduledAt).toLocaleString()}` : ""}`
+                        : ""}
+                      {item.feedback
+                        ? ` · Rated ${item.feedback.rating}/5`
+                        : ""}
                     </CardDescription>
                   </CardHeader>
                 </Card>
