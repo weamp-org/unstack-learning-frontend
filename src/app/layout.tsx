@@ -9,6 +9,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter, Manrope } from "next/font/google";
 import Link from "next/link";
 
+import { NotificationsBell } from "@/components/notifications-bell";
 import { QueryProvider } from "@/components/query-provider";
 import { SiteNav } from "@/components/site-nav";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -79,6 +80,7 @@ export default function RootLayout({
                       Unstack Learning
                     </Link>
                     <SiteNav />
+                    <NotificationsBell />
                   </nav>
                   <ThemeToggle />
                   <Show when="signed-out">
