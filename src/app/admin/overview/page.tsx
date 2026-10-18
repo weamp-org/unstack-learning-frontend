@@ -59,7 +59,8 @@ function Overview() {
     );
   }
 
-  const { overview, responsiveness, bySubject, byTeacher } = statsQuery.data;
+  const { overview, responsiveness, bySubject, byTeacher, feedback } =
+    statsQuery.data;
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-8">
@@ -175,6 +176,74 @@ function Overview() {
                 </li>
               ))}
             </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Learner feedback</CardTitle>
+          <CardDescription>
+            Ratings learners left after their sessions (1–5).
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <div className="grid grid-cols-2 gap-3">
+            <StatLine
+              label="Feedback coverage"
+              value={
+                feedback.coverage === null
+                  ? "—"
+                  : `${Math.round(feedback.coverage * 100)}%`
+              }
+            />
+            <StatLine
+              label="Average rating"
+              value={
+                feedback.averageRating === null
+                  ? "—"
+                  : feedback.averageRating.toFixed(1)
+              }
+            />
+          </div>
+          {feedback.total === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No feedback yet. Coverage is the share of accepted + closed
+              requests with a rating.
+            </p>
+          ) : (
+            <>
+              <ul className="flex flex-col gap-1">
+                {feedback.distribution.map((row) => (
+                  <li
+                    key={row.rating}
+                    className="flex items-center justify-between gap-2 text-sm"
+                  >
+                    <span className="font-medium">{row.rating} ★</span>
+                    <span className="text-muted-foreground">
+                      {row.count} rating{row.count === 1 ? "" : "s"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              {feedback.recentComments.length > 0 ? (
+                <ul className="flex flex-col gap-2">
+                  {feedback.recentComments.map((item) => (
+                    <li
+                      key={item.requestId}
+                      className="flex flex-col gap-1 border-t pt-2 text-sm"
+                    >
+                      <span className="font-medium">
+                        {item.rating} ★ · {item.topic} ({item.subjectName})
+                      </span>
+                      <span className="text-muted-foreground">
+                        {item.comment}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </>
           )}
         </CardContent>
       </Card>

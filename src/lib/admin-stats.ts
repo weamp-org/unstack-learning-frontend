@@ -35,11 +35,34 @@ export interface StatsByTeacher {
   medianSecondsToAccept: number | null;
 }
 
+export interface StatsFeedbackDistribution {
+  rating: number;
+  count: number;
+}
+
+export interface StatsFeedbackComment {
+  requestId: string;
+  topic: string;
+  subjectName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
+export interface StatsFeedback {
+  total: number;
+  coverage: number | null;
+  averageRating: number | null;
+  distribution: StatsFeedbackDistribution[];
+  recentComments: StatsFeedbackComment[];
+}
+
 export interface AdminStats {
   overview: StatsOverview;
   responsiveness: StatsResponsiveness;
   bySubject: StatsBySubject[];
   byTeacher: StatsByTeacher[];
+  feedback: StatsFeedback;
 }
 
 export async function fetchAdminStats(): Promise<AdminStats> {
