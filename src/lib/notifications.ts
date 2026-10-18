@@ -5,7 +5,8 @@ import api from "./api";
 export type NotificationType =
   | "REQUEST_CREATED"
   | "REQUEST_ACCEPTED"
-  | "SESSION_UPDATED";
+  | "SESSION_UPDATED"
+  | "FEEDBACK_CREATED";
 
 export interface InboxNotification {
   id: string;
@@ -65,6 +66,8 @@ export function notificationText(notification: InboxNotification): string {
       return `Your request “${notification.request.topic}” was accepted by ${actor}.`;
     case "SESSION_UPDATED":
       return `Session details were updated for “${notification.request.topic}”.`;
+    case "FEEDBACK_CREATED":
+      return `${actor} shared feedback on “${notification.request.topic}”.`;
   }
 }
 

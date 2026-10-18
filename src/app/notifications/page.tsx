@@ -74,7 +74,7 @@ function Inbox() {
           <h1 className="text-3xl font-bold tracking-tight">Notifications</h1>
           <p className="text-muted-foreground">
             New requests for teachers, decisions and session updates for
-            learners.
+            learners, and feedback for teachers.
           </p>
         </div>
         {unread.length > 0 ? (
@@ -103,8 +103,8 @@ function Inbox() {
         </div>
       ) : notifications.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          Nothing here yet. New requests, acceptances and session updates will
-          show up here.
+          Nothing here yet. New requests, acceptances, session updates, and
+          feedback will show up here.
         </p>
       ) : (
         notifications.map((notification) => (
