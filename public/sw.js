@@ -10,12 +10,25 @@ self.addEventListener("push", (event) => {
     data = {};
   }
   const title = typeof data.title === "string" ? data.title : "Unstack Learning";
+  // Optional display/behavior overrides come from the backend payload.
+  // Anything absent falls back to the platform defaults below.
+  const vibrate = Array.isArray(data.vibrate)
+    ? data.vibrate.filter((n) => typeof n === "number" && Number.isFinite(n))
+    : [];
   const options = {
     body: typeof data.body === "string" ? data.body : "",
     icon: typeof data.icon === "string" ? data.icon : "/icon-192x192.png",
     data: {
       url: typeof data.url === "string" ? data.url : "/notifications",
     },
+    ...(vibrate.length > 0 ? { vibrate } : {}),
+    ...(typeof data.tag === "string" ? { tag: data.tag } : {}),
+    ...(typeof data.renotify === "boolean" ? { renotify: data.renotify } : {}),
+    ...(typeof data.requireInteraction === "boolean"
+      ? { requireInteraction: data.requireInteraction }
+      : {}),
+    ...(data.silent === true ? { silent: true } : {}),
+    ...(typeof data.image === "string" ? { image: data.image } : {}),
   };
   event.waitUntil(self.registration.showNotification(title, options));
 });

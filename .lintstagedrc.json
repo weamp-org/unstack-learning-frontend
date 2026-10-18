@@ -1,3 +1,4 @@
 {
-  "*.{js,cjs,mjs,ts,tsx,jsx,json,css}": ["biome check --write"]
+  "*.{js,cjs,mjs,ts,tsx,jsx,json,css}": ["biome check --write"],
+  "ignore": ["public/**"]
 }
