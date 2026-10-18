@@ -17,6 +17,7 @@ const TEACHER_LINKS = [
 ];
 
 const ADMIN_LINKS = [
+  { href: "/admin/overview", label: "Overview" },
   { href: "/admin/subjects", label: "Manage subjects" },
   { href: "/admin/users", label: "Manage users" },
 ];
