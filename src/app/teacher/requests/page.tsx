@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import { RequireRoles } from "@/components/require-roles";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +12,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { listRequestQueue } from "@/lib/requests";
+import { listSubjects } from "@/lib/subjects";
 
 export default function TeacherRequestQueuePage() {
   return (
@@ -22,11 +25,29 @@ export default function TeacherRequestQueuePage() {
 }
 
 function RequestQueue() {
+  const [subjectId, setSubjectId] = useState("");
+  const [query, setQuery] = useState("");
   const queueQuery = useQuery({
     queryKey: ["requests", "queue"],
     queryFn: listRequestQueue,
     retry: false,
   });
+  const subjectsQuery = useQuery({
+    queryKey: ["subjects"],
+    queryFn: () => listSubjects(),
+    retry: false,
+  });
+
+  const items = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return (queueQuery.data ?? []).filter((item) => {
+      if (subjectId && item.subjectId !== subjectId) return false;
+      if (!needle) return true;
+      const haystack =
+        `${item.topic} ${item.details ?? ""} ${item.learner?.name ?? ""}`.toLowerCase();
+      return haystack.includes(needle);
+    });
+  }, [queueQuery.data, subjectId, query]);
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-8">
@@ -34,6 +55,28 @@ function RequestQueue() {
       <p className="text-muted-foreground">
         Open requests in your subjects, longest waiting first.
       </p>
+
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <select
+          value={subjectId}
+          onChange={(event) => setSubjectId(event.target.value)}
+          aria-label="Filter by subject"
+          className="h-9 rounded-lg border border-input bg-transparent px-2 text-sm outline-none"
+        >
+          <option value="">All subjects</option>
+          {(subjectsQuery.data ?? []).map((subject) => (
+            <option key={subject.id} value={subject.id}>
+              {subject.name}
+            </option>
+          ))}
+        </select>
+        <Input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search topic, details, learner…"
+          aria-label="Search requests"
+        />
+      </div>
 
       {queueQuery.isPending ? (
         <p className="text-sm text-muted-foreground">Loading queue…</p>
@@ -46,13 +89,15 @@ function RequestQueue() {
             Try again
           </Button>
         </div>
-      ) : queueQuery.data.length === 0 ? (
+      ) : items.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          Queue is clear. Nothing waiting for review.
+          {queueQuery.data?.length
+            ? "No requests match these filters."
+            : "Queue is clear. Nothing waiting for review."}
         </p>
       ) : (
         <ul className="flex flex-col gap-3">
-          {queueQuery.data.map((item) => (
+          {items.map((item) => (
             <li key={item.id}>
               <Link href={`/requests/${item.id}`}>
                 <Card>
