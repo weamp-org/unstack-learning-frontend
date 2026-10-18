@@ -66,6 +66,7 @@ src/
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key (public, starts with `pk_`)           |
 | `CLERK_SECRET_KEY`                  | Clerk secret key (private, starts with `sk_`)               |
 | `NEXT_PUBLIC_BACKEND_BASE_URL`      | Unstack Learning API URL (default: `http://localhost:3000/api/v1`) |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY`    | Web-push public key for push subscriptions (must match backend `VAPID_PUBLIC_KEY`) |
 
 ## Scripts
 
