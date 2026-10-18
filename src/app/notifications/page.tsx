@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { toast } from "sonner";
 
+import { PushToggle } from "@/components/push-toggle";
 import { RequireRoles } from "@/components/require-roles";
 import { Button } from "@/components/ui/button";
 import {
@@ -86,6 +87,8 @@ function Inbox() {
           </Button>
         ) : null}
       </div>
+
+      <PushToggle />
 
       {inboxQuery.isPending ? (
         <p className="text-sm text-muted-foreground">Loading notifications…</p>
