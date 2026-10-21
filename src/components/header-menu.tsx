@@ -7,12 +7,13 @@ import {
   BookOpenIcon,
   CalendarDaysIcon,
   ClipboardListIcon,
+  HandHelpingIcon,
   InboxIcon,
   LayoutDashboardIcon,
   LibraryIcon,
   MenuIcon,
   SettingsIcon,
-  ShieldIcon,
+  ShapesIcon,
   UsersIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -113,7 +114,7 @@ export function HeaderMenu() {
 
         <DropdownMenuItem asChild>
           <Link href="/requests/new">
-            <BookOpenIcon aria-hidden="true" />
+            <HandHelpingIcon aria-hidden="true" />
             Request help
           </Link>
         </DropdownMenuItem>
@@ -165,7 +166,7 @@ export function HeaderMenu() {
 
             <DropdownMenuItem asChild>
               <Link href="/admin/subjects">
-                <ShieldIcon aria-hidden="true" />
+                <ShapesIcon aria-hidden="true" />
                 Manage subjects
               </Link>
             </DropdownMenuItem>
