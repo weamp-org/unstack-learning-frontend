@@ -45,13 +45,16 @@ export function SiteHeader() {
             Decorative: the wordmark text beside it already names the site, so
             this carries an empty alt rather than repeating "Unstack Learning"
             to a screen reader twice.
+
+            The mark is a black glyph on transparency, so it inverts to white
+            in dark mode rather than disappearing into the dark header.
           */}
           <Image
-            src="/icon-192x192.png"
+            src="/android-chrome-192x192.png"
             alt=""
             width={24}
             height={24}
-            className="size-6"
+            className="size-6 dark:invert"
           />
           Unstack Learning
         </Link>
