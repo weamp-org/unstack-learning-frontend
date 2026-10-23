@@ -12,7 +12,8 @@ export function HeroSection() {
           {SITE_TAGLINE}
         </p>
         <h1 className="text-4xl font-bold tracking-tight text-balance md:text-5xl">
-          Get free, one-on-one academic help from a real teacher.
+          Get <span className="text-primary">free</span>, one-on-one academic
+          help from a real teacher.
         </h1>
         <p className="max-w-xl text-lg text-muted-foreground">
           Pick a subject, tell us where you&apos;re stuck, and a teacher will
