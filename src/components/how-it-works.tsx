@@ -13,7 +13,7 @@ const STEPS = [
     number: "01",
     title: "Tell us where you're stuck.",
     description:
-      "Pick a subject, describe the problem and what you've tried, and attach anything that helps explain it.",
+      "Pick a subject, add a topic, describe the problem and what you've tried, and attach anything that helps explain it.",
   },
   {
     number: "02",
