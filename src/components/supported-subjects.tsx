@@ -41,47 +41,51 @@ export async function SupportedSubjectsSection() {
   return (
     <section
       aria-labelledby="supported-subjects-heading"
-      className="mx-auto w-full max-w-5xl px-4 py-12 md:py-16"
+      className="border-y bg-muted/50"
     >
-      <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
-        Supported subjects
-      </p>
-      <h2
-        id="supported-subjects-heading"
-        className="mt-2 text-3xl font-bold tracking-tight text-balance"
-      >
-        Help in the subjects you&apos;re taking.
-      </h2>
-      <p className="mt-2 max-w-xl text-muted-foreground">
-        If it&apos;s listed here, a teacher can meet you on it — pick one and
-        request help.
-      </p>
-
-      <Marquee
-        pauseOnHover
-        className="mt-8 -mx-4 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]"
-      >
-        {visible.map((subject) => (
-          <Card key={subject.id} className="w-64 shrink-0">
-            <CardHeader>
-              <CardTitle className="text-base">{subject.name}</CardTitle>
-              {subject.description ? (
-                <CardDescription className="line-clamp-2">
-                  {subject.description}
-                </CardDescription>
-              ) : null}
-            </CardHeader>
-          </Card>
-        ))}
-      </Marquee>
-
-      <div className="mt-6">
-        <Link
-          href="/subjects"
-          className="text-sm font-medium underline underline-offset-4 hover:text-foreground"
+      <div className="mx-auto w-full max-w-5xl px-4 py-12 md:py-16">
+        <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+          Supported subjects
+        </p>
+        <h2
+          id="supported-subjects-heading"
+          className="mt-2 text-3xl font-bold tracking-tight text-balance"
         >
-          Browse all {subjects.length} subjects
-        </Link>
+          Help in the subjects you&apos;re taking.
+        </h2>
+        <p className="mt-2 max-w-xl text-muted-foreground">
+          If it&apos;s listed here, a teacher can meet you on it. Pick one and
+          request help.
+        </p>
+
+        <Marquee
+          pauseOnHover
+          className="mt-8 -mx-4 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]"
+        >
+          {visible.map((subject) => (
+            <Card key={subject.id} className="w-64 shrink-0">
+              <CardHeader>
+                <CardTitle className="text-base">{subject.name}</CardTitle>
+                {subject.description ? (
+                  <CardDescription className="line-clamp-2">
+                    {subject.description}
+                  </CardDescription>
+                ) : null}
+              </CardHeader>
+            </Card>
+          ))}
+        </Marquee>
+
+        {subjects.length > visible.length ? (
+          <div className="mt-6">
+            <Link
+              href="/subjects"
+              className="text-sm font-medium underline underline-offset-4 hover:text-foreground"
+            >
+              Browse all {subjects.length} subjects
+            </Link>
+          </div>
+        ) : null}
       </div>
     </section>
   );
