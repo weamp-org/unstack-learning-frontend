@@ -16,8 +16,8 @@ export function HeroSection() {
         </h1>
         <p className="max-w-xl text-lg text-muted-foreground">
           Pick a subject, tell us where you&apos;re stuck, and a teacher will
-          review your request and meet you live to work through it — so you
-          understand it, not just answer it.
+          review your request and meet you live to work through it. You will
+          leave understanding it, not just answering it.
         </p>
         <div className="flex flex-wrap gap-3">
           <Button asChild size="lg">
