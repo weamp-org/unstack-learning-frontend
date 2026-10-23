@@ -25,7 +25,7 @@ const STEPS = [
     number: "03",
     title: "Work through it live.",
     description:
-      "Meet, understand it, keep learning. Rate the session afterwards to help teachers improve.",
+      "Meet your teacher live and work through it together. Ask questions until it clicks, so you can continue on your own. Afterwards, a quick rating helps teachers improve.",
   },
 ] as const;
 
