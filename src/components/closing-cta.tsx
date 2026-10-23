@@ -2,12 +2,34 @@ import { ClockIcon, GiftIcon, UsersIcon, VideoIcon } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 const FACTS = [
-  { Icon: GiftIcon, label: "Free" },
-  { Icon: UsersIcon, label: "One-on-one" },
-  { Icon: VideoIcon, label: "Online" },
-  { Icon: ClockIcon, label: "Request anytime" },
+  {
+    Icon: GiftIcon,
+    label: "Free",
+    description: "Always free for learners.",
+  },
+  {
+    Icon: UsersIcon,
+    label: "One-on-one",
+    description: "Your teacher's full attention.",
+  },
+  {
+    Icon: VideoIcon,
+    label: "Online",
+    description: "Meet over a link, from anywhere.",
+  },
+  {
+    Icon: ClockIcon,
+    label: "Request anytime",
+    description: "Send a request whenever. Teachers respond in their hours.",
+  },
 ] as const;
 
 export function ClosingCtaSection() {
@@ -20,17 +42,23 @@ export function ClosingCtaSection() {
         >
           Ready to get unstuck?
         </h2>
-        <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-          {FACTS.map(({ Icon, label }) => (
-            <li
-              key={label}
-              className="flex items-center gap-2 text-sm text-muted-foreground"
-            >
-              <Icon aria-hidden="true" className="size-4 text-primary" />
-              {label}
+
+        <ul className="mt-8 grid w-full grid-cols-1 gap-4 text-left sm:grid-cols-2 lg:grid-cols-4">
+          {FACTS.map(({ Icon, label, description }) => (
+            <li key={label}>
+              <Card className="h-full">
+                <CardHeader>
+                  <span className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+                    <Icon aria-hidden="true" className="size-5 text-primary" />
+                  </span>
+                  <CardTitle className="mt-2 text-base">{label}</CardTitle>
+                  <CardDescription>{description}</CardDescription>
+                </CardHeader>
+              </Card>
             </li>
           ))}
         </ul>
+
         <Button asChild size="lg" className="mt-8">
           <Link href="/requests/new">Get unstuck</Link>
         </Button>
