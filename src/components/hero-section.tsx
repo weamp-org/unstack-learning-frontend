@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { GetUnstuckButton } from "@/components/get-unstuck-button";
 import { Button } from "@/components/ui/button";
 import { SITE_TAGLINE } from "@/lib/site";
 
@@ -24,9 +25,7 @@ export function HeroSection() {
           leave understanding it, not just answering it.
         </p>
         <div className="flex flex-wrap gap-3">
-          <Button asChild size="lg">
-            <Link href="/requests/new">Get unstuck</Link>
-          </Button>
+          <GetUnstuckButton />
           <Button asChild size="lg" variant="outline">
             <Link href="#how-it-works">How it works</Link>
           </Button>

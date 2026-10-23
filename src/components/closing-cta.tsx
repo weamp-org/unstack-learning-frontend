@@ -1,7 +1,5 @@
 import { ClockIcon, GiftIcon, UsersIcon, VideoIcon } from "lucide-react";
-import Link from "next/link";
-
-import { Button } from "@/components/ui/button";
+import { GetUnstuckButton } from "@/components/get-unstuck-button";
 import {
   Card,
   CardDescription,
@@ -59,9 +57,9 @@ export function ClosingCtaSection() {
           ))}
         </ul>
 
-        <Button asChild size="lg" className="mt-8">
-          <Link href="/requests/new">Get unstuck</Link>
-        </Button>
+        <div className="mt-8">
+          <GetUnstuckButton />
+        </div>
       </div>
     </section>
   );
