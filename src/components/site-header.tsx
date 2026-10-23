@@ -10,6 +10,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { HeaderMenu } from "@/components/header-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -25,10 +26,22 @@ export function SiteHeader() {
     retry: false,
   });
   const role = meQuery.data?.role;
+  const pathname = usePathname();
   // Teachers and admins live in the review queue; students live in the
   // request flow. One primary CTA per role keeps the header to a single
   // filled word either way.
   const isTeacherLike = role === "TEACHER" || role === "ADMIN";
+
+  // On the landing page the wordmark link would navigate to the page it is
+  // already on (a no-op), so scroll to the very top instead. Anywhere else
+  // it stays a plain navigation to "/". Smoothness comes from the global
+  // `scroll-behavior`, which also respects reduced motion.
+  function handleWordmarkClick(event: React.MouseEvent) {
+    if (pathname === "/") {
+      event.preventDefault();
+      window.scrollTo({ top: 0 });
+    }
+  }
 
   return (
     // `sticky` rather than `fixed`: it stays in flow and occupies its own
@@ -39,6 +52,7 @@ export function SiteHeader() {
             onto two lines when the controls beside it need the room. */}
         <Link
           href="/"
+          onClick={handleWordmarkClick}
           className="flex shrink-0 items-center gap-2 whitespace-nowrap font-heading text-lg font-normal tracking-wide hover:underline"
         >
           {/*

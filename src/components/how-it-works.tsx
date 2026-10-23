@@ -31,7 +31,7 @@ export function HowItWorksSection() {
     <section
       id="how-it-works"
       aria-labelledby="how-it-works-heading"
-      className="scroll-mt-16"
+      className="scroll-mt-14"
     >
       <div className="mx-auto flex w-full max-w-5xl flex-col px-4 py-12 md:py-16">
         <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
