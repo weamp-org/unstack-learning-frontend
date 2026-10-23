@@ -1,6 +1,3 @@
-import Link from "next/link";
-
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardDescription,
@@ -71,12 +68,6 @@ export function HowItWorksSection() {
           more teachers. You can edit it while it&apos;s open or close it
           anytime.
         </p>
-
-        <div className="mt-6">
-          <Button asChild size="lg">
-            <Link href="/requests/new">Get unstuck</Link>
-          </Button>
-        </div>
       </div>
     </section>
   );
