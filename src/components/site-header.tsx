@@ -39,6 +39,9 @@ export function SiteHeader() {
   function handleWordmarkClick(event: React.MouseEvent) {
     if (pathname === "/") {
       event.preventDefault();
+      // The anchor click left its hash behind; drop it without navigating
+      // so a copy of the URL doesn't point mid-page.
+      window.history.replaceState(null, "", "/");
       window.scrollTo({ top: 0 });
     }
   }
