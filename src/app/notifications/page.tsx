@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { formatRelativeDateTime } from "@/lib/datetime";
 import {
   listNotifications,
   markAllNotificationsRead,
@@ -128,7 +129,7 @@ function Inbox() {
                 {notificationText(notification)}
               </CardTitle>
               <CardDescription>
-                {new Date(notification.createdAt).toLocaleString()}
+                {formatRelativeDateTime(notification.createdAt)}
                 {" · "}
                 {notification.request.status === "OPEN"
                   ? "Awaiting review"

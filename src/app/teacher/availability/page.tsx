@@ -20,6 +20,7 @@ import {
   overrideErrorMessage,
   WEEKDAYS,
 } from "@/lib/availability";
+import { formatWeekdayDate } from "@/lib/datetime";
 
 const MINE_KEY = ["availability", "mine"];
 
@@ -359,11 +360,7 @@ function todayLocal(): string {
 
 function formatOverrideDate(date: string): string {
   // Noon anchor avoids the date shifting under the browser timezone.
-  return new Date(`${date}T12:00:00`).toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
+  return formatWeekdayDate(new Date(`${date}T12:00:00`));
 }
 
 function OverrideExceptions() {

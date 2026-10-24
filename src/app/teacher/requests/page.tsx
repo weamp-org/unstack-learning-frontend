@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { formatDate } from "@/lib/datetime";
 import { listRequestQueue } from "@/lib/requests";
 import { listSubjects } from "@/lib/subjects";
 
@@ -105,7 +106,7 @@ function RequestQueue() {
                     <CardTitle>{item.topic}</CardTitle>
                     <CardDescription>
                       {item.subject.name} · {item.learner?.name ?? "Learner"} ·{" "}
-                      {new Date(item.createdAt).toLocaleDateString()}
+                      {formatDate(item.createdAt)}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="flex flex-col gap-3">

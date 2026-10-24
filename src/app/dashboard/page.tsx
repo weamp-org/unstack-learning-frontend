@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/card";
 import { fetchAdminStats } from "@/lib/admin-stats";
 import { listMyAvailability } from "@/lib/availability";
+import { formatDate, formatRelativeDateTime } from "@/lib/datetime";
 import {
   type HelpRequest,
   listMyHelpRequests,
@@ -187,8 +188,7 @@ function StudentHome() {
                     <CardHeader>
                       <CardTitle className="text-sm">{item.topic}</CardTitle>
                       <CardDescription>
-                        {item.subject.name} ·{" "}
-                        {new Date(item.createdAt).toLocaleDateString()} ·{" "}
+                        {item.subject.name} · {formatDate(item.createdAt)} ·{" "}
                         {statusLabel(item.status)}
                       </CardDescription>
                     </CardHeader>
@@ -403,7 +403,7 @@ function NextSessionCard({ request }: { request: HelpRequest }) {
       <CardContent className="flex flex-wrap items-center gap-3">
         {session?.scheduledAt ? (
           <p className="text-sm font-medium">
-            {new Date(session.scheduledAt).toLocaleString()}
+            {formatRelativeDateTime(session.scheduledAt)}
           </p>
         ) : (
           <p className="text-sm text-muted-foreground">
