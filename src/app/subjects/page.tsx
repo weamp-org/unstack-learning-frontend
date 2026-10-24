@@ -39,13 +39,9 @@ export default function SubjectsPage() {
           <p className="text-sm text-muted-foreground">
             Couldn&apos;t load subjects.
           </p>
-          <button
-            type="button"
-            onClick={() => refetch()}
-            className="text-sm font-medium underline"
-          >
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
             Try again
-          </button>
+          </Button>
         </div>
       ) : data.length === 0 ? (
         <p className="text-sm text-muted-foreground">No subjects yet.</p>

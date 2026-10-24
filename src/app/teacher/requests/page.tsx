@@ -13,9 +13,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { formatDate } from "@/lib/datetime";
 import { listRequestQueue } from "@/lib/requests";
 import { listSubjects } from "@/lib/subjects";
+
+/** Radix Select cannot use an empty string as an item value. */
+const ALL_SUBJECTS = "all";
 
 export default function TeacherRequestQueuePage() {
   return (
@@ -58,19 +68,27 @@ function RequestQueue() {
       </p>
 
       <div className="flex flex-col gap-2 sm:flex-row">
-        <select
-          value={subjectId}
-          onChange={(event) => setSubjectId(event.target.value)}
-          aria-label="Filter by subject"
-          className="h-9 rounded-lg border border-input bg-transparent px-2 text-sm outline-none"
+        <Select
+          value={subjectId || ALL_SUBJECTS}
+          onValueChange={(value) =>
+            setSubjectId(value === ALL_SUBJECTS ? "" : value)
+          }
         >
-          <option value="">All subjects</option>
-          {(subjectsQuery.data ?? []).map((subject) => (
-            <option key={subject.id} value={subject.id}>
-              {subject.name}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger
+            aria-label="Filter by subject"
+            className="w-full sm:w-56"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL_SUBJECTS}>All subjects</SelectItem>
+            {(subjectsQuery.data ?? []).map((subject) => (
+              <SelectItem key={subject.id} value={subject.id}>
+                {subject.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
