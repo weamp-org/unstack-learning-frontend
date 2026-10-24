@@ -56,6 +56,29 @@ export async function markAllNotificationsRead(): Promise<{ count: number }> {
   return data;
 }
 
+/** Removes one inbox row. Permanent: the event does not come back. */
+export async function dismissNotification(
+  id: string,
+): Promise<{ id: string; dismissed: boolean }> {
+  const { data } = await api.delete<{ id: string; dismissed: boolean }>(
+    `/notifications/${id}`,
+  );
+  return data;
+}
+
+/**
+ * Empties the inbox. `readOnly` (the default) keeps anything still unread, so
+ * the destructive case has to be asked for explicitly.
+ */
+export async function clearNotifications(
+  readOnly = true,
+): Promise<{ count: number }> {
+  const { data } = await api.delete<{ count: number }>("/notifications", {
+    params: { readOnly },
+  });
+  return data;
+}
+
 /** One-line human summary per notification type. */
 export function notificationText(notification: InboxNotification): string {
   const actor = notification.actor?.name ?? "Someone";
