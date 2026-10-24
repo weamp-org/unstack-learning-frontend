@@ -8,6 +8,7 @@ import {
   CalendarDaysIcon,
   ClipboardListIcon,
   HandHelpingIcon,
+  HouseIcon,
   InboxIcon,
   LayoutDashboardIcon,
   LibraryIcon,
@@ -90,6 +91,13 @@ export function HeaderMenu() {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="min-w-56">
+        <DropdownMenuItem asChild>
+          <Link href="/dashboard">
+            <HouseIcon aria-hidden="true" />
+            Dashboard
+          </Link>
+        </DropdownMenuItem>
+
         <DropdownMenuItem asChild>
           <Link href="/notifications">
             <BellIcon aria-hidden="true" />

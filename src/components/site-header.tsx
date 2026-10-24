@@ -92,13 +92,13 @@ export function SiteHeader() {
               Button as the child gives them the header's sizing and stops the
               wrap.
             */}
-            <SignInButton mode="modal">
+            <SignInButton mode="modal" forceRedirectUrl="/dashboard">
               <Button size="sm">Sign in</Button>
             </SignInButton>
 
             {/* Clerk's sign-in modal already offers sign-up, so on mobile one
                 button is enough and saves the width the primary CTA needs. */}
-            <SignUpButton mode="modal">
+            <SignUpButton mode="modal" forceRedirectUrl="/dashboard">
               <Button
                 size="sm"
                 variant="outline"
