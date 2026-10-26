@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   getMyTeachingSubjects,
   listSubjects,
@@ -112,12 +113,14 @@ function TeachingSubjectsForm() {
                 <Card>
                   <CardHeader>
                     <CardTitle>
-                      <label className="flex cursor-pointer items-center gap-2">
-                        <input
-                          type="checkbox"
+                      <label
+                        htmlFor={`subject-${subject.id}`}
+                        className="flex cursor-pointer items-center gap-2"
+                      >
+                        <Checkbox
+                          id={`subject-${subject.id}`}
                           checked={current.includes(subject.id)}
-                          onChange={() => toggle(subject.id)}
-                          className="size-4 accent-primary"
+                          onCheckedChange={() => toggle(subject.id)}
                         />
                         {subject.name}
                       </label>

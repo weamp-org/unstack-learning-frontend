@@ -32,6 +32,7 @@ import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { formatDate, formatDateTime } from "@/lib/datetime";
 import {
   acceptHelpRequest,
   closeHelpRequest,
@@ -241,8 +242,7 @@ function Detail({ params }: { params: Promise<{ id: string }> }) {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">{request.topic}</h1>
         <p className="text-muted-foreground">
-          {request.subject.name} ·{" "}
-          {new Date(request.createdAt).toLocaleDateString()}
+          {request.subject.name} · {formatDate(request.createdAt)}
         </p>
       </div>
 
@@ -311,8 +311,7 @@ function Detail({ params }: { params: Promise<{ id: string }> }) {
             ) : null}
             {request.session.scheduledAt ? (
               <p className="text-sm text-muted-foreground">
-                Scheduled for{" "}
-                {new Date(request.session.scheduledAt).toLocaleString()}
+                Scheduled for {formatDateTime(request.session.scheduledAt)}
               </p>
             ) : null}
           </CardContent>

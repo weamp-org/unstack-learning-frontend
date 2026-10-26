@@ -8,6 +8,13 @@ import { RequireRoles } from "@/components/require-roles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   availabilityErrorMessage,
   createAvailability,
   createOverride,
@@ -20,6 +27,7 @@ import {
   overrideErrorMessage,
   WEEKDAYS,
 } from "@/lib/availability";
+import { formatWeekdayDate } from "@/lib/datetime";
 
 const MINE_KEY = ["availability", "mine"];
 
@@ -359,11 +367,7 @@ function todayLocal(): string {
 
 function formatOverrideDate(date: string): string {
   // Noon anchor avoids the date shifting under the browser timezone.
-  return new Date(`${date}T12:00:00`).toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
+  return formatWeekdayDate(new Date(`${date}T12:00:00`));
 }
 
 function OverrideExceptions() {
@@ -486,19 +490,20 @@ function OverrideExceptions() {
           aria-label="Exception end"
           className="w-auto"
         />
-        <select
+        <Select
           value={kind}
-          onChange={(event) =>
-            setKind(
-              event.target.value === "AVAILABLE" ? "AVAILABLE" : "UNAVAILABLE",
-            )
+          onValueChange={(value) =>
+            setKind(value === "AVAILABLE" ? "AVAILABLE" : "UNAVAILABLE")
           }
-          aria-label="Exception kind"
-          className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm outline-none"
         >
-          <option value="UNAVAILABLE">Unavailable</option>
-          <option value="AVAILABLE">Available</option>
-        </select>
+          <SelectTrigger size="sm" aria-label="Exception kind" className="w-36">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="UNAVAILABLE">Unavailable</SelectItem>
+            <SelectItem value="AVAILABLE">Available</SelectItem>
+          </SelectContent>
+        </Select>
         <Button
           variant="outline"
           size="sm"

@@ -1,30 +1,23 @@
-import { currentUser } from "@clerk/nextjs/server";
+import type { Metadata } from "next";
 
-export default async function Home() {
-  const user = await currentUser();
+import { ClosingCtaSection } from "@/components/closing-cta";
+import { HeroSection } from "@/components/hero-section";
+import { HowItWorksSection } from "@/components/how-it-works";
+import { SupportedSubjectsSection } from "@/components/supported-subjects";
 
+export const metadata: Metadata = {
+  title: "Unstack Learning — Free one-on-one academic help",
+  description:
+    "Stuck on a subject? Pick it, describe the problem, and a teacher will meet you live to work through it. Free, one-on-one, and online.",
+};
+
+export default function Home() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-      <h1 className="text-4xl font-bold tracking-tight">Unstack Learning</h1>
-      <p className="text-xl font-medium">Get unstuck. Keep learning.</p>
-      <p className="max-w-xl text-lg text-muted-foreground">
-        Free academic help — pick a subject, describe what you&apos;re stuck on,
-        and a teacher will review your request and arrange a live session to
-        work through it with you.
-      </p>
-      {user ? (
-        <p className="text-sm text-muted-foreground">
-          Signed in as{" "}
-          <span className="font-medium text-foreground">
-            {user.firstName || user.emailAddresses[0]?.emailAddress}
-          </span>
-          .
-        </p>
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          Sign in to request help.
-        </p>
-      )}
-    </div>
+    <>
+      <HeroSection />
+      <SupportedSubjectsSection />
+      <HowItWorksSection />
+      <ClosingCtaSection />
+    </>
   );
 }

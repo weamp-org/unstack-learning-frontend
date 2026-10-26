@@ -11,6 +11,13 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
   createHelpRequest,
@@ -85,24 +92,32 @@ function NewRequestForm() {
                 <FieldLabel htmlFor="request-subject">
                   Subject <RequiredMark />
                 </FieldLabel>
-                <select
-                  {...field}
-                  id="request-subject"
-                  aria-invalid={fieldState.invalid}
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
                   disabled={subjectsQuery.isPending}
-                  className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm outline-none disabled:opacity-50"
                 >
-                  <option value="">
-                    {subjectsQuery.isPending
-                      ? "Loading subjects…"
-                      : "Choose a subject"}
-                  </option>
-                  {(subjectsQuery.data ?? []).map((subject) => (
-                    <option key={subject.id} value={subject.id}>
-                      {subject.name}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger
+                    id="request-subject"
+                    aria-invalid={fieldState.invalid}
+                    className="w-full"
+                  >
+                    <SelectValue
+                      placeholder={
+                        subjectsQuery.isPending
+                          ? "Loading subjects…"
+                          : "Choose a subject"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(subjectsQuery.data ?? []).map((subject) => (
+                      <SelectItem key={subject.id} value={subject.id}>
+                        {subject.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}

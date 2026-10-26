@@ -15,6 +15,13 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   fetchCurrentUser,
   listUsers,
   type ManagedUser,
@@ -165,22 +172,32 @@ function UserRow({
           <CardDescription>{user.email}</CardDescription>
         </CardHeader>
         <CardContent>
-          <label className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-2 text-sm">
             <span className="text-muted-foreground">Role</span>
-            <select
+            <Select
               value={user.role}
               disabled={disabled || isSelf}
-              title={isSelf ? "You cannot change your own role" : "Change role"}
-              onChange={(event) => onRoleChange(event.target.value as UserRole)}
-              className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              onValueChange={(value) => onRoleChange(value as UserRole)}
             >
-              {USER_ROLES.map((value) => (
-                <option key={value} value={value}>
-                  {value[0] + value.slice(1).toLowerCase()}
-                </option>
-              ))}
-            </select>
-          </label>
+              <SelectTrigger
+                size="sm"
+                aria-label="Role"
+                title={
+                  isSelf ? "You cannot change your own role" : "Change role"
+                }
+                className="w-32"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {USER_ROLES.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {value[0] + value.slice(1).toLowerCase()}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </CardContent>
       </Card>
     </li>

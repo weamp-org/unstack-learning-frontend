@@ -10,7 +10,7 @@ Unstack Learning connects learners with teachers for live help sessions. Learner
 - **Help requests** — Learner `requests/new|me|[id]` (create, edit OPEN, close, feedback `1-5` + comment) with RHF + zod
 - **Teacher queue** — `teacher/requests` (subject filter + search, oldest first) → shared detail for accept/decline/session edit
 - **Teacher setup** — `teacher/subjects` + `teacher/availability` (weekly windows + overrides)
-- **Notifications + push** — Inbox, bell (30s poll), push toggle via web-push
+- **Notifications + push** — Inbox, header menu badge (5min backstop poll), push toggle via web-push
 - **Admin** — `admin/overview|subjects|users` (`<AdminOnly>`)
 - **Dark mode** — Light/dark/system toggle via `next-themes`
 - **UI components** — shadcn/ui (radix-nova style) with Tailwind v4
@@ -63,6 +63,10 @@ src/
 │   │   ├── subjects/page.tsx     # Teachable subjects — TEACHER,ADMIN
 │   │   └── availability/page.tsx # Weekly windows + overrides — TEACHER,ADMIN
 │   ├── notifications/page.tsx    # Inbox — all roles
+  │   ├── contributors/page.tsx   # Repo contributor graphs (footer link, noindex)
+  │   ├── privacy/page.tsx        # Privacy Policy (footer legal nav)
+  │   ├── terms/page.tsx          # Terms of Service (footer legal nav)
+  │   └── settings/page.tsx       # Appearance + push — all roles
 │   └── admin/
 │       ├── overview/page.tsx # Counts — ADMIN
 │       ├── subjects/page.tsx # Subject CRUD — ADMIN
@@ -71,13 +75,14 @@ src/
 │   ├── ui/                  # shadcn/ui (generated — Biome-ignored, don't hand-edit for style)
 │   ├── query-provider.tsx   # TanStack Query provider (staleTime: 30s)
 │   ├── theme-provider.tsx   # next-themes provider wrapper
-│   ├── theme-toggle.tsx     # Light/dark toggle button
+│   ├── theme-toggle.tsx     # Light/dark toggle (header when signed out, settings when signed in)
+│   ├── site-header.tsx        # Sticky header (wordmark + role CTA + menu + avatar)
+│   ├── header-menu.tsx        # Signed-in disclosure (role-filtered, unread dot/count)
+│   ├── site-footer.tsx        # © + Built by WeAMP + legal nav
 │   ├── require-roles.tsx    # Client guard (401 → Sign in required, wrong role → Restricted)
 │   ├── admin-only.tsx       # RequireRoles ADMIN wrapper
 │   ├── session-form.tsx     # Manual meeting link (any platform) + future-time form
 │   ├── required-mark.tsx    # RequiredMark + FormRequiredNote
-│   ├── site-nav.tsx         # Server role-aware nav (public fallback on fetch failure)
-│   ├── notifications-bell.tsx
 │   └── push-toggle.tsx
 ├── lib/
 │   ├── api.ts               # Axios instance + Clerk auth interceptor (10s timeout, /api/v1 base)

@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { formatDate, formatRelativeDateTime } from "@/lib/datetime";
 import { listMyHelpRequests } from "@/lib/requests";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -78,10 +79,9 @@ function MyRequests() {
                       </span>
                     </div>
                     <CardDescription>
-                      {item.subject.name} ·{" "}
-                      {new Date(item.createdAt).toLocaleDateString()}
+                      {item.subject.name} · {formatDate(item.createdAt)}
                       {item.status === "ACCEPTED"
-                        ? ` · Accepted${item.teacher?.name ? ` by ${item.teacher.name}` : ""}${item.session?.scheduledAt ? ` · ${new Date(item.session.scheduledAt).toLocaleString()}` : ""}`
+                        ? ` · Accepted${item.teacher?.name ? ` by ${item.teacher.name}` : ""}${item.session?.scheduledAt ? ` · ${formatRelativeDateTime(item.session.scheduledAt)}` : ""}`
                         : ""}
                       {item.feedback
                         ? ` · Rated ${item.feedback.rating}/5`
