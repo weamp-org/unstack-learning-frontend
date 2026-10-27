@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+
 import { RequireRoles } from "@/components/require-roles";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +23,8 @@ import {
 } from "@/components/ui/select";
 import { formatDate } from "@/lib/datetime";
 import { listRequestQueue } from "@/lib/requests";
-import { listSubjects } from "@/lib/subjects";
+import { getMyTeachingSubjects } from "@/lib/subjects";
+import { fetchCurrentUser } from "@/lib/users";
 
 /** Radix Select cannot use an empty string as an item value. */
 const ALL_SUBJECTS = "all";
@@ -38,16 +40,54 @@ export default function TeacherRequestQueuePage() {
 function RequestQueue() {
   const [subjectId, setSubjectId] = useState("");
   const [query, setQuery] = useState("");
+
+  // Same ["me"] entry RequireRoles filled, so this costs no extra request.
+  const meQuery = useQuery({
+    queryKey: ["me"],
+    queryFn: fetchCurrentUser,
+    retry: false,
+  });
+  const isAdmin = meQuery.data?.role === "ADMIN";
+
   const queueQuery = useQuery({
     queryKey: ["requests", "queue"],
     queryFn: listRequestQueue,
     retry: false,
   });
-  const subjectsQuery = useQuery({
-    queryKey: ["subjects"],
-    queryFn: () => listSubjects(),
+
+  // Only teachers need their subject list; the queue is already scoped to it
+  // server-side, so this is here for the empty state and the scope copy.
+  const teachingQuery = useQuery({
+    queryKey: ["teaching", "mine"],
+    queryFn: getMyTeachingSubjects,
+    enabled: isAdmin === false,
     retry: false,
   });
+
+  const subjects = useMemo(
+    () => teachingQuery.data ?? [],
+    [teachingQuery.data],
+  );
+
+  // Filter options come from the queue itself: offering a subject with no rows
+  // (an admin's whole catalogue, a teacher's other subjects) only ever yields
+  // an empty list and a misleading "no matches".
+  const subjectOptions = useMemo(() => {
+    const counts = new Map<string, { name: string; count: number }>();
+    for (const item of queueQuery.data ?? []) {
+      const entry = counts.get(item.subjectId);
+      if (entry) entry.count += 1;
+      else {
+        counts.set(item.subjectId, {
+          name: item.subject.name,
+          count: 1,
+        });
+      }
+    }
+    return [...counts.entries()]
+      .map(([id, entry]) => ({ id, ...entry }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [queueQuery.data]);
 
   const items = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -60,35 +100,63 @@ function RequestQueue() {
     });
   }, [queueQuery.data, subjectId, query]);
 
+  const queue = queueQuery.data ?? [];
+  const hasNoSubjects =
+    !isAdmin && teachingQuery.isSuccess && subjects.length === 0;
+  const subjectNames = subjects
+    .map((row) => row.subject.name)
+    .sort((a, b) => a.localeCompare(b));
+
+  function clearFilters() {
+    setSubjectId("");
+    setQuery("");
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-8">
       <h1 className="text-3xl font-bold tracking-tight">Review queue</h1>
-      <p className="text-muted-foreground">
-        Open requests in your subjects, longest waiting first.
-      </p>
+      {isAdmin ? (
+        <p className="text-muted-foreground">
+          All open requests, oldest first. Teachers only see their own subjects.
+        </p>
+      ) : (
+        <p className="text-muted-foreground">
+          Open requests in your subjects, longest waiting first.{" "}
+          <Link
+            href="/teacher/subjects"
+            className="font-medium text-foreground underline underline-offset-4"
+          >
+            Change subjects
+          </Link>
+        </p>
+      )}
 
       <div className="flex flex-col gap-2 sm:flex-row">
-        <Select
-          value={subjectId || ALL_SUBJECTS}
-          onValueChange={(value) =>
-            setSubjectId(value === ALL_SUBJECTS ? "" : value)
-          }
-        >
-          <SelectTrigger
-            aria-label="Filter by subject"
-            className="w-full sm:w-56"
+        {subjectOptions.length > 1 ? (
+          <Select
+            value={subjectId || ALL_SUBJECTS}
+            onValueChange={(value) =>
+              setSubjectId(value === ALL_SUBJECTS ? "" : value)
+            }
           >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL_SUBJECTS}>All subjects</SelectItem>
-            {(subjectsQuery.data ?? []).map((subject) => (
-              <SelectItem key={subject.id} value={subject.id}>
-                {subject.name}
+            <SelectTrigger
+              aria-label="Filter by subject"
+              className="w-full sm:w-56"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL_SUBJECTS}>
+                All subjects ({queue.length})
               </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+              {subjectOptions.map((option) => (
+                <SelectItem key={option.id} value={option.id}>
+                  {option.name} ({option.count})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : null}
         <Input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
@@ -108,12 +176,33 @@ function RequestQueue() {
             Try again
           </Button>
         </div>
-      ) : items.length === 0 ? (
+      ) : hasNoSubjects ? (
+        <div className="flex flex-col items-start gap-2">
+          <p className="text-sm text-muted-foreground">
+            You haven&apos;t picked subjects yet. Requests only appear for
+            subjects you teach.
+          </p>
+          <Button variant="outline" asChild>
+            <Link href="/teacher/subjects">Choose your subjects</Link>
+          </Button>
+        </div>
+      ) : queue.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          {queueQuery.data?.length
-            ? "No requests match these filters."
-            : "Queue is clear. Nothing waiting for review."}
+          {isAdmin
+            ? "No open requests right now."
+            : subjectNames.length > 0 && subjectNames.length <= 3
+              ? `Queue is clear — nothing open in ${subjectNames.join(", ")} right now.`
+              : "Queue is clear — nothing open in your subjects right now."}
         </p>
+      ) : items.length === 0 ? (
+        <div className="flex flex-col items-start gap-2">
+          <p className="text-sm text-muted-foreground">
+            No requests match these filters.
+          </p>
+          <Button variant="outline" onClick={clearFilters}>
+            Clear filters
+          </Button>
+        </div>
       ) : (
         <ul className="flex flex-col gap-3">
           {items.map((item) => (
@@ -122,9 +211,16 @@ function RequestQueue() {
                 <Card>
                   <CardHeader>
                     <CardTitle>{item.topic}</CardTitle>
-                    <CardDescription>
-                      {item.subject.name} · {item.learner?.name ?? "Learner"} ·{" "}
-                      {formatDate(item.createdAt)}
+                    <CardDescription className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span>
+                        {item.subject.name} · {item.learner?.name ?? "Learner"}{" "}
+                        · {formatDate(item.createdAt)}
+                      </span>
+                      {item.hasTeacher === false ? (
+                        <span className="inline-flex items-center rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300">
+                          No teacher for this subject
+                        </span>
+                      ) : null}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="flex flex-col gap-3">

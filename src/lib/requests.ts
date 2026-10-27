@@ -26,6 +26,8 @@ export interface HelpRequest {
   teacher?: { id: string; name: string } | null;
   session?: HelpSession | null;
   feedback?: HelpFeedback | null;
+  /** Queue only: false when no teacher has claimed this request's subject. */
+  hasTeacher?: boolean;
 }
 
 export type HelpRequestStatus = "OPEN" | "ACCEPTED" | "CLOSED";
