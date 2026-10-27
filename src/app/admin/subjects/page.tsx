@@ -3,7 +3,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-
 import { AdminOnly } from "@/components/admin-only";
 import { SubjectForm } from "@/components/subjects/subject-form";
 import { Button } from "@/components/ui/button";
@@ -31,6 +30,7 @@ import {
   type UpdateSubjectInput,
   updateSubject,
 } from "@/lib/subjects";
+import { errorToast } from "@/lib/toast";
 
 const ADMIN_SUBJECTS_KEY = ["subjects", "admin"];
 
@@ -69,7 +69,7 @@ function SubjectsManager() {
       toast.success("Subject created.");
     },
     onError: (error) =>
-      toast.error(subjectErrorMessage(error, "Could not create subject.")),
+      errorToast(subjectErrorMessage(error, "Could not create subject.")),
   });
 
   const updateMutation = useMutation({
@@ -82,7 +82,7 @@ function SubjectsManager() {
       toast.success("Subject updated.");
     },
     onError: (error) =>
-      toast.error(subjectErrorMessage(error, "Could not update subject.")),
+      errorToast(subjectErrorMessage(error, "Could not update subject.")),
   });
 
   const deleteMutation = useMutation({
@@ -93,7 +93,7 @@ function SubjectsManager() {
       toast.success("Subject deleted.");
     },
     onError: (error) =>
-      toast.error(subjectErrorMessage(error, "Could not delete subject.")),
+      errorToast(subjectErrorMessage(error, "Could not delete subject.")),
   });
 
   function openCreate() {

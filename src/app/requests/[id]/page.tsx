@@ -9,7 +9,6 @@ import { use, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-
 import { RequireRoles } from "@/components/require-roles";
 import { FormRequiredNote, RequiredMark } from "@/components/required-mark";
 import { SessionDetailsForm } from "@/components/session-form";
@@ -49,6 +48,7 @@ import {
   upsertFeedback,
 } from "@/lib/requests";
 import { getMyTeachingSubjects } from "@/lib/subjects";
+import { errorToast } from "@/lib/toast";
 import { fetchCurrentUser } from "@/lib/users";
 
 const editRequestSchema = z.object({
@@ -131,7 +131,7 @@ function Detail({ params }: { params: Promise<{ id: string }> }) {
         toast.warning("Another teacher already took this request.");
         return;
       }
-      toast.error(requestErrorMessage(error, "Could not accept request."));
+      errorToast(requestErrorMessage(error, "Could not accept request."));
     },
   });
 
@@ -144,7 +144,7 @@ function Detail({ params }: { params: Promise<{ id: string }> }) {
       toast.success("Session updated.");
     },
     onError: (error) =>
-      toast.error(requestErrorMessage(error, "Could not update session.")),
+      errorToast(requestErrorMessage(error, "Could not update session.")),
   });
 
   const declineMutation = useMutation({
@@ -156,7 +156,7 @@ function Detail({ params }: { params: Promise<{ id: string }> }) {
       router.push("/teacher/requests");
     },
     onError: (error) =>
-      toast.error(requestErrorMessage(error, "Could not decline request.")),
+      errorToast(requestErrorMessage(error, "Could not decline request.")),
   });
 
   const closeMutation = useMutation({
@@ -167,7 +167,7 @@ function Detail({ params }: { params: Promise<{ id: string }> }) {
       toast.success("Request closed.");
     },
     onError: (error) =>
-      toast.error(requestErrorMessage(error, "Could not close request.")),
+      errorToast(requestErrorMessage(error, "Could not close request.")),
   });
 
   const editMutation = useMutation({
@@ -183,7 +183,7 @@ function Detail({ params }: { params: Promise<{ id: string }> }) {
       toast.success("Request updated.");
     },
     onError: (error) =>
-      toast.error(requestErrorMessage(error, "Could not update request.")),
+      errorToast(requestErrorMessage(error, "Could not update request.")),
   });
 
   const feedbackMutation = useMutation({
@@ -198,7 +198,7 @@ function Detail({ params }: { params: Promise<{ id: string }> }) {
       toast.success("Thanks for the feedback.");
     },
     onError: (error) =>
-      toast.error(requestErrorMessage(error, "Could not save feedback.")),
+      errorToast(requestErrorMessage(error, "Could not save feedback.")),
   });
 
   if (requestQuery.isPending || meQuery.isPending) {

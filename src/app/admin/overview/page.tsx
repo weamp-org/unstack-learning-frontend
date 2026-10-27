@@ -1,7 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useEffect } from "react";
+
 import { AdminOnly } from "@/components/admin-only";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +18,7 @@ import {
   formatDuration,
   formatWaitMinutes,
 } from "@/lib/admin-stats";
+import { errorToast } from "@/lib/toast";
 
 export default function AdminOverviewPage() {
   return (
@@ -33,6 +35,16 @@ function Overview() {
     retry: false,
   });
 
+  const errorMessage = statsQuery.isError
+    ? adminStatsErrorMessage(statsQuery.error, "Couldn't load stats.")
+    : null;
+
+  // The page already shows this inline; the toast is a nudge, so fire it from
+  // an effect (not during render) and let the shared id collapse repeats.
+  useEffect(() => {
+    if (errorMessage !== null) errorToast(errorMessage);
+  }, [errorMessage]);
+
   if (statsQuery.isPending) {
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-8">
@@ -43,15 +55,10 @@ function Overview() {
   }
 
   if (statsQuery.isError) {
-    const message = adminStatsErrorMessage(
-      statsQuery.error,
-      "Couldn't load stats.",
-    );
-    toast.error(message);
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col items-start gap-4 p-8">
         <h1 className="text-3xl font-bold tracking-tight">Overview</h1>
-        <p className="text-sm text-muted-foreground">{message}</p>
+        <p className="text-sm text-muted-foreground">{errorMessage}</p>
         <Button variant="outline" onClick={() => statsQuery.refetch()}>
           Try again
         </Button>

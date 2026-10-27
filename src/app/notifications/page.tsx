@@ -5,7 +5,6 @@ import { ArchiveIcon, RotateCcwIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-
 import { PushToggle } from "@/components/push-toggle";
 import { RequireRoles } from "@/components/require-roles";
 import { Button } from "@/components/ui/button";
@@ -37,6 +36,7 @@ import {
   notificationText,
   restoreNotification,
 } from "@/lib/notifications";
+import { errorToast } from "@/lib/toast";
 
 const INBOX_KEY = ["notifications", "inbox"];
 const ARCHIVE_KEY = ["notifications", "archive"];
@@ -80,7 +80,7 @@ function Inbox() {
     mutationFn: (id: string) => markNotificationRead(id),
     onSuccess: invalidate,
     onError: (error) =>
-      toast.error(notificationErrorMessage(error, "Could not mark as read.")),
+      errorToast(notificationErrorMessage(error, "Could not mark as read.")),
   });
 
   const readAllMutation = useMutation({
@@ -90,7 +90,7 @@ function Inbox() {
       toast.success("All notifications marked as read.");
     },
     onError: (error) =>
-      toast.error(
+      errorToast(
         notificationErrorMessage(error, "Could not mark all as read."),
       ),
   });
@@ -102,7 +102,7 @@ function Inbox() {
       toast.success("Archived. Find it under the Archived tab.");
     },
     onError: (error) =>
-      toast.error(
+      errorToast(
         notificationErrorMessage(error, "Could not archive that notification."),
       ),
   });
@@ -119,7 +119,7 @@ function Inbox() {
       );
     },
     onError: (error) =>
-      toast.error(
+      errorToast(
         notificationErrorMessage(error, "Could not archive notifications."),
       ),
   });
@@ -131,7 +131,7 @@ function Inbox() {
       toast.success("Moved back to your inbox.");
     },
     onError: (error) =>
-      toast.error(
+      errorToast(
         notificationErrorMessage(error, "Could not restore that notification."),
       ),
   });
@@ -154,7 +154,7 @@ function Inbox() {
       );
     },
     onError: (error) =>
-      toast.error(
+      errorToast(
         notificationErrorMessage(error, "Could not delete notifications."),
       ),
   });

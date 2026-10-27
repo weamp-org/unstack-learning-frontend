@@ -3,7 +3,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-
 import { RequireRoles } from "@/components/require-roles";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +18,7 @@ import {
   setMyTeachingSubjects,
   subjectErrorMessage,
 } from "@/lib/subjects";
+import { errorToast } from "@/lib/toast";
 
 const MINE_KEY = ["teaching", "mine"];
 
@@ -61,7 +61,7 @@ function TeachingSubjectsForm() {
       toast.success("Teaching subjects saved.");
     },
     onError: (error) =>
-      toast.error(subjectErrorMessage(error, "Could not save subjects.")),
+      errorToast(subjectErrorMessage(error, "Could not save subjects.")),
   });
 
   function toggle(id: string) {

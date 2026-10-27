@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,6 +18,7 @@ import {
   subscribeDevice,
   unsubscribeDevice,
 } from "@/lib/push";
+import { errorToast } from "@/lib/toast";
 
 type PushState = "unsupported" | "denied" | "off" | "on" | "working";
 
@@ -57,7 +57,7 @@ export function PushToggle() {
       if (permission !== "granted") {
         setState(permission === "denied" ? "denied" : "off");
         if (permission === "denied") {
-          toast.error(
+          errorToast(
             "Notifications are blocked. Allow them in your browser settings to turn push on.",
           );
         }
@@ -68,7 +68,7 @@ export function PushToggle() {
       toast.success("Push notifications on for this device.");
     } catch (error) {
       setState("off");
-      toast.error(pushErrorMessage(error, "Could not turn push on."));
+      errorToast(pushErrorMessage(error, "Could not turn push on."));
     }
   }
 
@@ -87,7 +87,7 @@ export function PushToggle() {
       } catch {
         setState("off");
       }
-      toast.error(pushErrorMessage(error, "Could not turn push off."));
+      errorToast(pushErrorMessage(error, "Could not turn push off."));
     }
   }
 
@@ -108,7 +108,7 @@ export function PushToggle() {
         toast.warning("No devices to send to. Turn push on first.");
       }
     } catch (error) {
-      toast.error(pushErrorMessage(error, "Could not send a test push."));
+      errorToast(pushErrorMessage(error, "Could not send a test push."));
     } finally {
       setTesting(false);
     }

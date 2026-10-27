@@ -3,7 +3,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-
 import { RequireRoles } from "@/components/require-roles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +27,7 @@ import {
   WEEKDAYS,
 } from "@/lib/availability";
 import { formatWeekdayDate } from "@/lib/datetime";
+import { errorToast } from "@/lib/toast";
 
 const MINE_KEY = ["availability", "mine"];
 
@@ -108,7 +108,7 @@ function AvailabilityManager() {
       toast.success("Availability saved.");
     },
     onError: (error) =>
-      toast.error(availabilityErrorMessage(error, "Could not save.")),
+      errorToast(availabilityErrorMessage(error, "Could not save.")),
   });
 
   const server: DraftWeek = {};
@@ -395,7 +395,7 @@ function OverrideExceptions() {
       toast.success("Exception added.");
     },
     onError: (error) =>
-      toast.error(overrideErrorMessage(error, "Could not add exception.")),
+      errorToast(overrideErrorMessage(error, "Could not add exception.")),
   });
 
   const deleteMutation = useMutation({
@@ -405,7 +405,7 @@ function OverrideExceptions() {
       toast.success("Exception removed.");
     },
     onError: (error) =>
-      toast.error(overrideErrorMessage(error, "Could not remove exception.")),
+      errorToast(overrideErrorMessage(error, "Could not remove exception.")),
   });
 
   return (

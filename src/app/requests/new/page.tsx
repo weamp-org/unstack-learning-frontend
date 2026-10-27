@@ -26,6 +26,7 @@ import {
   requestErrorMessage,
 } from "@/lib/requests";
 import { listSubjects } from "@/lib/subjects";
+import { errorToast } from "@/lib/toast";
 
 export default function NewHelpRequestPage() {
   return (
@@ -59,7 +60,7 @@ function NewRequestForm() {
       router.push(`/requests/${created.id}`);
     },
     onError: (error) =>
-      toast.error(requestErrorMessage(error, "Could not send request.")),
+      errorToast(requestErrorMessage(error, "Could not send request.")),
   });
 
   return (

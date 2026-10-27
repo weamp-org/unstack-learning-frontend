@@ -3,7 +3,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-
 import { AdminOnly } from "@/components/admin-only";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { errorToast } from "@/lib/toast";
 import {
   fetchCurrentUser,
   listUsers,
@@ -68,7 +68,7 @@ function UsersManager() {
       toast.success(`${user.name} is now ${user.role}.`);
     },
     onError: (error) =>
-      toast.error(userErrorMessage(error, "Could not update role.")),
+      errorToast(userErrorMessage(error, "Could not update role.")),
   });
 
   return (
