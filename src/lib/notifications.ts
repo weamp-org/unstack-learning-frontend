@@ -19,14 +19,18 @@ export interface InboxNotification {
   };
   actor: { id: string; name: string } | null;
   readAt: string | null;
+  archivedAt: string | null;
   createdAt: string;
 }
 
 export async function listNotifications(
-  unreadOnly = false,
+  options: { archived?: boolean; unreadOnly?: boolean } = {},
 ): Promise<InboxNotification[]> {
   const { data } = await api.get<InboxNotification[]>("/notifications/me", {
-    params: unreadOnly ? { unreadOnly: "true" } : {},
+    params: {
+      ...(options.archived ? { archived: "true" } : {}),
+      ...(options.unreadOnly ? { unreadOnly: "true" } : {}),
+    },
   });
   return data;
 }
@@ -54,26 +58,59 @@ export async function markAllNotificationsRead(): Promise<{ count: number }> {
   return data;
 }
 
-/** Removes one inbox row. Permanent: the event does not come back. */
-export async function dismissNotification(
+/** Soft delete: the row leaves the inbox and waits in the archive. */
+export async function archiveNotification(
   id: string,
-): Promise<{ id: string; dismissed: boolean }> {
-  const { data } = await api.delete<{ id: string; dismissed: boolean }>(
-    `/notifications/${id}`,
+): Promise<InboxNotification> {
+  const { data } = await api.patch<InboxNotification>(
+    `/notifications/${id}/archive`,
+  );
+  return data;
+}
+
+/** Puts an archived row back in the inbox. */
+export async function restoreNotification(
+  id: string,
+): Promise<InboxNotification> {
+  const { data } = await api.patch<InboxNotification>(
+    `/notifications/${id}/restore`,
   );
   return data;
 }
 
 /**
- * Empties the inbox. `readOnly` (the default) keeps anything still unread, so
- * the destructive case has to be asked for explicitly.
+ * Archives the inbox: read rows by default, everything when `readOnly` is
+ * false. Nothing is destroyed — archived rows can be restored or deleted from
+ * the archive.
  */
-export async function clearNotifications(
+export async function archiveAllNotifications(
   readOnly = true,
 ): Promise<{ count: number }> {
-  const { data } = await api.delete<{ count: number }>("/notifications", {
-    params: { readOnly },
-  });
+  const { data } = await api.patch<{ count: number }>(
+    "/notifications/me/archive-all",
+    undefined,
+    { params: { readOnly } },
+  );
+  return data;
+}
+
+/** Hard delete, only offered from the archive. */
+export async function deleteNotification(
+  id: string,
+): Promise<{ id: string; deleted: boolean }> {
+  const { data } = await api.delete<{ id: string; deleted: boolean }>(
+    `/notifications/${id}`,
+  );
+  return data;
+}
+
+/** Empties the archive permanently. */
+export async function deleteArchivedNotifications(): Promise<{
+  count: number;
+}> {
+  const { data } = await api.delete<{ count: number }>(
+    "/notifications/archive",
+  );
   return data;
 }
 
