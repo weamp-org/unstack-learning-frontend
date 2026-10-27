@@ -216,6 +216,11 @@ function RequestQueue() {
                         {item.subject.name} · {item.learner?.name ?? "Learner"}{" "}
                         · {formatDate(item.createdAt)}
                       </span>
+                      {attachmentSummary(item.media) ? (
+                        <span className="text-muted-foreground">
+                          {attachmentSummary(item.media)}
+                        </span>
+                      ) : null}
                       {item.hasTeacher === false ? (
                         <span className="inline-flex items-center rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300">
                           No teacher for this subject
@@ -250,4 +255,15 @@ function RequestQueue() {
       )}
     </div>
   );
+}
+
+function attachmentSummary(
+  media: { kind: "IMAGE" | "AUDIO" }[] | undefined,
+): string {
+  const images = (media ?? []).filter((item) => item.kind === "IMAGE").length;
+  const audio = (media ?? []).filter((item) => item.kind === "AUDIO").length;
+  const parts: string[] = [];
+  if (images > 0) parts.push(`${images} photo${images === 1 ? "" : "s"}`);
+  if (audio > 0) parts.push(`${audio} voice note${audio === 1 ? "" : "s"}`);
+  return parts.join(" · ");
 }

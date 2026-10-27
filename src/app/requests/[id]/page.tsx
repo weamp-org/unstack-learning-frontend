@@ -9,6 +9,7 @@ import { use, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { MediaGallery } from "@/components/media/media-gallery";
 import { RequireRoles } from "@/components/require-roles";
 import { FormRequiredNote, RequiredMark } from "@/components/required-mark";
 import { SessionDetailsForm } from "@/components/session-form";
@@ -263,6 +264,17 @@ function Detail({ params }: { params: Promise<{ id: string }> }) {
           </CardHeader>
           <CardContent>
             <p className="whitespace-pre-wrap text-sm">{request.details}</p>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {request.media && request.media.length > 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Photos and voice notes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <MediaGallery media={request.media} />
           </CardContent>
         </Card>
       ) : null}
