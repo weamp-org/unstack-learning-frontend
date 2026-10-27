@@ -68,6 +68,20 @@ The template uses shadcn/ui's CSS variable system defined in `src/app/globals.cs
 
 Use these variables in your components with Tailwind classes: `bg-background`, `text-foreground`, `bg-primary`, etc.
 
+### Semantic status tokens
+
+Beyond the shadcn set, `globals.css` defines `--success` and `--warning` (plus `-foreground` pairs) so status UI never hardcodes a Tailwind palette colour. They are darker in light mode and lighter in `.dark` so they read as icons and text on an 8% tint of themselves.
+
+Toasts (`src/components/ui/sonner.tsx`) use them through sonner's rich-colour variables, tinted rather than solid:
+
+```css
+--success-bg: color-mix(in oklab, var(--success) 8%, var(--popover));
+--success-border: color-mix(in oklab, var(--success) 30%, var(--border));
+--success-text: var(--popover-foreground); /* body copy stays neutral */
+```
+
+The icon carries the colour (`[&_[data-icon]]:text-success` in `toastOptions.classNames`), so the type is readable without a saturated fill. `--destructive` covers error toasts. Add a token here instead of reaching for `text-green-600`; the palette is shared with light and dark themes and with any component that needs status colour later.
+
 ## Adding custom theme tokens
 
 1. Add the variable in `globals.css` — both in `:root` (light) and `.dark` (dark)

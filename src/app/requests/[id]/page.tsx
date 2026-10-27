@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { isAxiosError } from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
@@ -121,8 +122,17 @@ function Detail({ params }: { params: Promise<{ id: string }> }) {
       setAcceptOpen(false);
       toast.success("Request accepted.");
     },
-    onError: (error) =>
-      toast.error(requestErrorMessage(error, "Could not accept request.")),
+    onError: (error) => {
+      // 409 means another teacher got there first: nothing failed, so say so
+      // as a warning and refresh to show the new state.
+      if (isAxiosError(error) && error.response?.status === 409) {
+        invalidate();
+        setAcceptOpen(false);
+        toast.warning("Another teacher already took this request.");
+        return;
+      }
+      toast.error(requestErrorMessage(error, "Could not accept request."));
+    },
   });
 
   const updateSessionMutation = useMutation({
