@@ -1,6 +1,6 @@
 import { isAxiosError } from "axios";
 
-import api from "./api";
+import api, { apiErrorMessage } from "./api";
 
 export interface PushSubscriptionRow {
   id: string;
@@ -95,15 +95,13 @@ export async function sendTestPush(): Promise<PushSendResult> {
 }
 
 export function pushErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error && error.message) return error.message;
-  if (isAxiosError(error)) {
-    const message = error.response?.data as { message?: unknown } | undefined;
-    if (typeof message?.message === "string") {
-      return message.message;
-    }
-    if (error.response?.status === 503) {
-      return "Push delivery isn't configured on the server yet.";
-    }
+  // Browser-side failures (unsupported, permission denied) carry the only
+  // useful explanation; axios errors do not — their message is "Request
+  // failed with status code 503", so they go through the shared mapper.
+  if (!isAxiosError(error) && error instanceof Error && error.message) {
+    return error.message;
   }
-  return fallback;
+  return apiErrorMessage(error, fallback, {
+    503: "Push delivery isn't configured on the server yet.",
+  });
 }

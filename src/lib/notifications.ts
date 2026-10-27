@@ -1,6 +1,4 @@
-import { isAxiosError } from "axios";
-
-import api from "./api";
+import api, { apiErrorMessage } from "./api";
 
 export type NotificationType =
   | "REQUEST_CREATED"
@@ -98,21 +96,5 @@ export function notificationErrorMessage(
   error: unknown,
   fallback: string,
 ): string {
-  if (isAxiosError(error)) {
-    const body = error.response?.data as { message?: unknown } | undefined;
-    const status = error.response?.status ?? 0;
-    // Nest writes route misses and crashes for developers ("Cannot DELETE
-    // /api/v1/notifications/…", "Internal server error"), so only surface a
-    // message the API produced and the client can act on. A 404 here means
-    // the row is already gone, which the fallback copy handles better.
-    const actionable = status >= 400 && status < 500 && status !== 404;
-    if (
-      actionable &&
-      typeof body?.message === "string" &&
-      !body.message.startsWith("Cannot ")
-    ) {
-      return body.message;
-    }
-  }
-  return fallback;
+  return apiErrorMessage(error, fallback);
 }

@@ -1,7 +1,6 @@
-import { isAxiosError } from "axios";
 import { z } from "zod";
 
-import api from "./api";
+import api, { apiErrorMessage } from "./api";
 
 export interface AvailabilityWindow {
   id: string;
@@ -122,32 +121,18 @@ export async function deleteOverride(
 }
 
 export function overrideErrorMessage(error: unknown, fallback: string): string {
-  if (isAxiosError(error)) {
-    if (error.response?.status === 409) {
-      return "That overlaps an existing exception.";
-    }
-    const message = error.response?.data as { message?: unknown } | undefined;
-    if (typeof message?.message === "string") {
-      return message.message;
-    }
-  }
-  return fallback;
+  return apiErrorMessage(error, fallback, {
+    409: "That overlaps an existing exception.",
+  });
 }
 
 export function availabilityErrorMessage(
   error: unknown,
   fallback: string,
 ): string {
-  if (isAxiosError(error)) {
-    if (error.response?.status === 409) {
-      return "That overlaps an existing window.";
-    }
-    const message = error.response?.data as { message?: unknown } | undefined;
-    if (typeof message?.message === "string") {
-      return message.message;
-    }
-  }
-  return fallback;
+  return apiErrorMessage(error, fallback, {
+    409: "That overlaps an existing window.",
+  });
 }
 
 /** Minutes between two HH:MM times, or null when invalid or not positive. */

@@ -1,6 +1,4 @@
-import { isAxiosError } from "axios";
-
-import api from "./api";
+import api, { apiErrorMessage } from "./api";
 
 export interface StatsOverview {
   total: number;
@@ -74,16 +72,9 @@ export function adminStatsErrorMessage(
   error: unknown,
   fallback: string,
 ): string {
-  if (isAxiosError(error)) {
-    if (error.response?.status === 403) {
-      return "Only admins can view this.";
-    }
-    const message = error.response?.data as { message?: unknown } | undefined;
-    if (typeof message?.message === "string") {
-      return message.message;
-    }
-  }
-  return fallback;
+  return apiErrorMessage(error, fallback, {
+    403: "Only admins can view this.",
+  });
 }
 
 export function formatDuration(seconds: number | null): string {

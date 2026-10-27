@@ -1,7 +1,6 @@
-import { isAxiosError } from "axios";
 import { z } from "zod";
 
-import api from "./api";
+import api, { apiErrorMessage } from "./api";
 import type { Subject } from "./subjects";
 
 export interface HelpLink {
@@ -199,11 +198,5 @@ export function defaultSessionTime(from = new Date()): string {
 }
 
 export function requestErrorMessage(error: unknown, fallback: string): string {
-  if (isAxiosError(error)) {
-    const message = error.response?.data as { message?: unknown } | undefined;
-    if (typeof message?.message === "string") {
-      return message.message;
-    }
-  }
-  return fallback;
+  return apiErrorMessage(error, fallback);
 }

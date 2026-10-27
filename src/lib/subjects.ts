@@ -1,7 +1,6 @@
-import { isAxiosError } from "axios";
 import { z } from "zod";
 
-import api from "./api";
+import api, { apiErrorMessage } from "./api";
 
 export interface Subject {
   id: string;
@@ -83,17 +82,8 @@ export async function setMyTeachingSubjects(
 }
 
 export function subjectErrorMessage(error: unknown, fallback: string): string {
-  if (isAxiosError(error)) {
-    if (error.response?.status === 409) {
-      return "A subject with that name already exists.";
-    }
-    if (error.response?.status === 403) {
-      return "Only admins can do that.";
-    }
-    const message = error.response?.data as { message?: unknown } | undefined;
-    if (typeof message?.message === "string") {
-      return message.message;
-    }
-  }
-  return fallback;
+  return apiErrorMessage(error, fallback, {
+    409: "A subject with that name already exists.",
+    403: "Only admins can do that.",
+  });
 }
