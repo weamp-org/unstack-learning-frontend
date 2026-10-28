@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import api, { apiErrorMessage } from "./api";
+import type { MediaAttachment } from "./media";
 import type { Subject } from "./subjects";
 
 export interface HelpLink {
@@ -21,6 +22,8 @@ export interface HelpRequest {
   updatedAt: string;
   subject: Subject;
   links: HelpLink[];
+  /** Signed URLs on detail/mine; queue rows only carry id and kind. */
+  media?: MediaAttachment[];
   learner?: { id: string; name: string };
   teacher?: { id: string; name: string } | null;
   session?: HelpSession | null;
@@ -62,10 +65,11 @@ export const helpRequestFormSchema = z.object({
     .string()
     .min(1, "Give your request a topic.")
     .max(120, "Topic must be 120 characters or fewer."),
+  // Optional: context can come from links, photos, or a voice note. The form
+  // enforces "at least one" and "audio needs a written summary".
   details: z
     .string()
     .trim()
-    .min(1, "Tell us a bit more about what you're stuck on.")
     .max(5000, "Details must be 5000 characters or fewer."),
   links: z.array(linkSchema).max(3, "At most 3 links."),
 });
@@ -77,6 +81,7 @@ export interface CreateHelpRequestInput {
   topic: string;
   details?: string;
   links?: { url: string }[];
+  mediaIds?: string[];
 }
 
 export async function createHelpRequest(

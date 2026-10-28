@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { MediaFields } from "@/components/media/media-fields";
 import { RequireRoles } from "@/components/require-roles";
 import { FormRequiredNote, RequiredMark } from "@/components/required-mark";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useMediaUploads } from "@/hooks/use-media-uploads";
 import {
   createHelpRequest,
   type HelpRequestFormValues,
@@ -51,6 +53,7 @@ function NewRequestForm() {
     defaultValues: { subjectId: "", topic: "", details: "", links: [] },
   });
   const links = useFieldArray({ control: form.control, name: "links" });
+  const media = useMediaUploads();
 
   const createMutation = useMutation({
     mutationFn: createHelpRequest,
@@ -67,21 +70,39 @@ function NewRequestForm() {
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-8">
       <h1 className="text-3xl font-bold tracking-tight">Request help</h1>
       <p className="text-muted-foreground">
-        Describe what you&apos;re stuck on so a teacher can help you.
+        Add at least one of: a description, a link, a photo, or a voice note.
       </p>
 
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit((values) =>
+          onSubmit={form.handleSubmit((values) => {
+            const details = values.details.trim();
+            const links = values.links.map((link) => ({ url: link.url }));
+            const hasMedia = media.readyIds.length > 0;
+
+            if (!details && links.length === 0 && !hasMedia) {
+              form.setError("details", {
+                type: "manual",
+                message: "Add a description, a link, a photo, or a voice note.",
+              });
+              return;
+            }
+            if (media.counts.audio > 0 && !details) {
+              form.setError("details", {
+                type: "manual",
+                message: "Add a short written summary with your voice note.",
+              });
+              return;
+            }
+
             createMutation.mutate({
               subjectId: values.subjectId,
               topic: values.topic,
-              details: values.details?.trim() ? values.details : undefined,
-              links: values.links.map((link) => ({
-                url: link.url,
-              })),
-            }),
-          )}
+              details: details || undefined,
+              links,
+              mediaIds: media.readyIds,
+            });
+          })}
           className="flex flex-col gap-4"
         >
           <FormRequiredNote />
@@ -150,9 +171,7 @@ function NewRequestForm() {
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="request-details">
-                  Tell us more <RequiredMark />
-                </FieldLabel>
+                <FieldLabel htmlFor="request-details">Tell us more</FieldLabel>
                 <Textarea
                   {...field}
                   id="request-details"
@@ -166,6 +185,8 @@ function NewRequestForm() {
               </Field>
             )}
           />
+
+          <MediaFields media={media} />
 
           <div className="flex flex-col gap-2">
             <span className="text-sm font-medium">Links (max 3)</span>
@@ -212,8 +233,15 @@ function NewRequestForm() {
             ) : null}
           </div>
 
-          <Button type="submit" disabled={createMutation.isPending}>
-            {createMutation.isPending ? "Sending…" : "Send request"}
+          <Button
+            type="submit"
+            disabled={createMutation.isPending || media.busy}
+          >
+            {media.busy
+              ? "Waiting for uploads…"
+              : createMutation.isPending
+                ? "Sending…"
+                : "Send request"}
           </Button>
         </form>
       </Form>
