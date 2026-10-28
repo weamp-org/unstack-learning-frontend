@@ -1,8 +1,8 @@
 "use client";
 
 import {
-  CameraIcon,
   ImageIcon,
+  ImagePlusIcon,
   MicIcon,
   SquareIcon,
   Trash2Icon,
@@ -20,12 +20,12 @@ import {
   AttachmentGroup,
   AttachmentMedia,
   AttachmentTitle,
-  AttachmentTrigger,
 } from "@/components/ui/attachment";
 import { Button } from "@/components/ui/button";
 import { Waveform as WaveformCanvas } from "@/components/ui/waveform";
 import type { MediaItem, useMediaUploads } from "@/hooks/use-media-uploads";
 import { MAX_AUDIO_SECONDS, MAX_IMAGES, readAudioDuration } from "@/lib/media";
+import { cn } from "@/lib/utils";
 
 type MediaController = ReturnType<typeof useMediaUploads>;
 
@@ -64,7 +64,7 @@ export function MediaFields({ media }: { media: MediaController }) {
 
       <div className="flex flex-col gap-2">
         <span className="text-sm font-medium">
-          Voice notes · up to 2 · 3 minutes each
+          Voice notes (up to 2, 3 minutes each)
         </span>
         <VoiceRecorder onAdd={media.addAudio} />
 
@@ -130,8 +130,8 @@ function PhotoDropzone({
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <span className="text-sm font-medium">Photos · up to {MAX_IMAGES}</span>
+    <div className="flex flex-col gap-3">
+      <span className="text-sm font-medium">Photos (up to {MAX_IMAGES})</span>
       <input
         ref={inputRef}
         type="file"
@@ -145,9 +145,10 @@ function PhotoDropzone({
         }}
       />
 
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: dropping is a
-          pointer-only enhancement; the Add photos button is the accessible path. */}
-      <div
+      <button
+        type="button"
+        disabled={full}
+        onClick={() => inputRef.current?.click()}
         onDragOver={(event) => {
           if (full) return;
           event.preventDefault();
@@ -160,30 +161,31 @@ function PhotoDropzone({
           if (full) return;
           handleFiles(Array.from(event.dataTransfer.files));
         }}
-        className={
+        className={cn(
+          "flex min-h-40 w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-8 text-center transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
           dragging
-            ? "rounded-xl bg-primary/5 p-1 ring-2 ring-primary/40"
-            : "rounded-xl p-1"
-        }
+            ? "border-primary bg-primary/5"
+            : "border-border hover:border-primary/40 hover:bg-muted/40",
+          full &&
+            "cursor-not-allowed opacity-60 hover:border-border hover:bg-transparent",
+        )}
       >
-        <AttachmentGroup>
-          <Attachment state="idle" orientation="vertical" size="sm">
-            <AttachmentMedia variant="icon">
-              <CameraIcon aria-hidden="true" />
-            </AttachmentMedia>
-            <AttachmentContent>
-              <AttachmentTitle>Add photos</AttachmentTitle>
-              <AttachmentDescription>
-                {full ? "Limit reached" : "Click or drop here"}
-              </AttachmentDescription>
-            </AttachmentContent>
-            <AttachmentTrigger
-              aria-label="Add photos"
-              disabled={full}
-              onClick={() => inputRef.current?.click()}
-            />
-          </Attachment>
+        <span className="flex size-11 items-center justify-center rounded-full bg-muted">
+          <ImagePlusIcon
+            aria-hidden="true"
+            className="size-5 text-muted-foreground"
+          />
+        </span>
+        <span className="text-sm font-medium">
+          {full ? "Photo limit reached" : "Drag photos here"}
+        </span>
+        <span className="text-xs text-muted-foreground">
+          {full ? "Remove one to add another" : "or click to browse"}
+        </span>
+      </button>
 
+      {photos.length > 0 ? (
+        <AttachmentGroup>
           {photos.map((item) => (
             <Attachment
               key={item.localId}
@@ -228,7 +230,7 @@ function PhotoDropzone({
             </Attachment>
           ))}
         </AttachmentGroup>
-      </div>
+      ) : null}
 
       <p className="text-xs text-muted-foreground">
         Photos are resized before upload.
