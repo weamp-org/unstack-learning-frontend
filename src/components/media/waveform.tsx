@@ -4,17 +4,18 @@ import { PauseIcon, PlayIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { AudioScrubber } from "@/components/ui/waveform";
 import { cn } from "@/lib/utils";
 
-const BAR_COUNT = 64;
+const PEAK_COUNT = 256;
+const PLACEHOLDER_PEAKS = Array.from({ length: 100 }, () => 0.25);
 
 /**
- * Waveform player for voice notes.
- *
- * Peaks come from decoding the file in the browser, so no extra dependency and
- * no server-side audio processing. Decoding can fail (Safari cannot decode a
- * WebM recorded in Chrome), in which case we fall back to native controls
- * rather than leaving the teacher with nothing playable.
+ * Waveform player for voice notes, built on the ElevenLabs UI canvas
+ * scrubber. Peaks are decoded in the browser, so there is no server-side
+ * audio processing. Decoding can fail (Safari cannot decode a WebM recorded
+ * in Chrome); then we fall back to native controls rather than leaving the
+ * teacher with nothing playable.
  */
 export function Waveform({
   src,
@@ -26,10 +27,7 @@ export function Waveform({
   label?: string;
 }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const trackRef = useRef<HTMLDivElement | null>(null);
-  const [peaks, setPeaks] = useState<{ id: number; value: number }[] | null>(
-    null,
-  );
+  const [peaks, setPeaks] = useState<number[] | null>(null);
   const [undecodable, setUndecodable] = useState(false);
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -48,9 +46,9 @@ export function Waveform({
         const context = new AudioContext();
         const decoded = await context.decodeAudioData(buffer);
         const samples = decoded.getChannelData(0);
-        const block = Math.max(1, Math.floor(samples.length / BAR_COUNT));
+        const block = Math.max(1, Math.floor(samples.length / PEAK_COUNT));
         const values: number[] = [];
-        for (let bar = 0; bar < BAR_COUNT; bar += 1) {
+        for (let bar = 0; bar < PEAK_COUNT; bar += 1) {
           let sum = 0;
           const start = bar * block;
           const end = Math.min(samples.length, start + block);
@@ -61,12 +59,7 @@ export function Waveform({
         }
         const loudest = Math.max(...values, 0.0001);
         if (!cancelled) {
-          setPeaks(
-            values.map((value, id) => ({
-              id,
-              value: Math.max(0.08, value / loudest),
-            })),
-          );
+          setPeaks(values.map((value) => Math.max(0.04, value / loudest)));
         }
         void context.close();
       } catch {
@@ -120,38 +113,32 @@ export function Waveform({
     }
   }
 
-  function seekTo(ratio: number) {
+  function seekTo(seconds: number) {
     const audio = audioRef.current;
     if (!audio || !Number.isFinite(audio.duration) || audio.duration === 0) {
       return;
     }
-    const clamped = Math.min(1, Math.max(0, ratio));
-    audio.currentTime = clamped * audio.duration;
+    audio.currentTime = Math.min(audio.duration, Math.max(0, seconds));
     setCurrent(audio.currentTime);
-  }
-
-  function onTrackClick(event: React.MouseEvent<HTMLDivElement>) {
-    const rect = event.currentTarget.getBoundingClientRect();
-    seekTo((event.clientX - rect.left) / rect.width);
   }
 
   function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
     if (event.key === "ArrowRight") {
       event.preventDefault();
-      seekTo((current + 5) / Math.max(duration, 0.001));
+      seekTo(current + 5);
     } else if (event.key === "ArrowLeft") {
       event.preventDefault();
-      seekTo((current - 5) / Math.max(duration, 0.001));
+      seekTo(current - 5);
     } else if (event.key === "Home") {
       event.preventDefault();
       seekTo(0);
     } else if (event.key === "End") {
       event.preventDefault();
-      seekTo(1);
+      seekTo(duration);
     }
   }
 
-  if (undecodable || peaks === null) {
+  if (undecodable) {
     return (
       <audio
         controls
@@ -165,10 +152,8 @@ export function Waveform({
     );
   }
 
-  const progress = duration > 0 ? current / duration : 0;
-
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className={cn("flex items-center gap-3", className)}>
       <Button
         type="button"
         variant="outline"
@@ -183,35 +168,23 @@ export function Waveform({
         )}
       </Button>
 
-      <div
-        ref={trackRef}
-        role="slider"
-        tabIndex={0}
-        aria-label={`Seek ${label}`}
-        aria-valuemin={0}
-        aria-valuemax={Math.round(duration)}
-        aria-valuenow={Math.round(current)}
-        aria-valuetext={`${formatTime(current)} of ${formatTime(duration)}`}
-        className="flex h-10 flex-1 cursor-pointer items-center gap-[2px] rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-        onClick={onTrackClick}
+      <AudioScrubber
+        data={peaks ?? PLACEHOLDER_PEAKS}
+        currentTime={current}
+        duration={duration || 1}
+        onSeek={seekTo}
         onKeyDown={onKeyDown}
-      >
-        {peaks.map((peak) => (
-          <span
-            key={peak.id}
-            aria-hidden="true"
-            style={{ height: `${Math.round(peak.value * 100)}%` }}
-            className={cn(
-              "min-h-[3px] flex-1 rounded-full transition-colors",
-              peak.id / peaks.length <= progress
-                ? "bg-primary"
-                : "bg-muted-foreground/30",
-            )}
-          />
-        ))}
-      </div>
+        aria-label={`Seek ${label}`}
+        aria-valuetext={`${formatTime(current)} of ${formatTime(duration)}`}
+        showHandle
+        height={44}
+        barWidth={3}
+        barGap={2}
+        barRadius={1.5}
+        className="min-w-0 flex-1"
+      />
 
-      <span className="w-16 text-right text-xs tabular-nums text-muted-foreground">
+      <span className="w-20 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
         {formatTime(current)} / {formatTime(duration)}
       </span>
     </div>

@@ -23,6 +23,7 @@ import {
   AttachmentTrigger,
 } from "@/components/ui/attachment";
 import { Button } from "@/components/ui/button";
+import { Waveform as WaveformCanvas } from "@/components/ui/waveform";
 import type { MediaItem, useMediaUploads } from "@/hooks/use-media-uploads";
 import { MAX_AUDIO_SECONDS, MAX_IMAGES, readAudioDuration } from "@/lib/media";
 
@@ -245,9 +246,7 @@ function VoiceRecorder({
     "idle" | "requesting" | "recording" | "preview"
   >("idle");
   const [seconds, setSeconds] = useState(0);
-  const [levels, setLevels] = useState<{ id: number; value: number }[]>(() =>
-    Array.from({ length: 24 }, (_, id) => ({ id, value: 0 })),
-  );
+  const [levels, setLevels] = useState<number[]>(() => new Array(48).fill(0));
   const [preview, setPreview] = useState<{ blob: Blob; url: string } | null>(
     null,
   );
@@ -288,7 +287,7 @@ function VoiceRecorder({
     void audioContextRef.current?.close();
     audioContextRef.current = null;
     analyserRef.current = null;
-    setLevels(Array.from({ length: 24 }, (_, id) => ({ id, value: 0 })));
+    setLevels(new Array(48).fill(0));
   }
 
   function stopTimer() {
@@ -319,15 +318,15 @@ function VoiceRecorder({
     const paint = (time: number) => {
       if (time - lastPaint > 60) {
         analyser.getByteFrequencyData(data);
-        const bars = 24;
+        const bars = 48;
         const step = Math.max(1, Math.floor(data.length / bars));
         setLevels(
-          Array.from({ length: bars }, (_, id) => {
+          Array.from({ length: bars }, (_, index) => {
             let sum = 0;
             for (let offset = 0; offset < step; offset += 1) {
-              sum += data[id * step + offset] ?? 0;
+              sum += data[index * step + offset] ?? 0;
             }
-            return { id, value: sum / step / 255 };
+            return sum / step / 255;
           }),
         );
         lastPaint = time;
@@ -446,17 +445,15 @@ function VoiceRecorder({
 
       {state === "recording" ? (
         <div className="flex flex-col gap-2">
-          <div aria-hidden="true" className="flex h-10 items-center gap-[3px]">
-            {levels.map((level) => (
-              <span
-                key={level.id}
-                style={{
-                  height: `${Math.max(6, Math.round(level.value * 100))}%`,
-                }}
-                className="flex-1 rounded-full bg-primary/70"
-              />
-            ))}
-          </div>
+          <WaveformCanvas
+            aria-hidden="true"
+            data={levels}
+            height={44}
+            barWidth={2}
+            barGap={2}
+            barRadius={1}
+            fadeEdges={false}
+          />
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-medium" aria-live="polite">
               Recording {formatDuration(seconds)} /{" "}
