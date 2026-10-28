@@ -194,7 +194,7 @@ export function Waveform({
         />
       )}
 
-      <span className="shrink-0 whitespace-nowrap text-[11px] tabular-nums text-muted-foreground">
+      <span className="shrink-0 whitespace-nowrap text-xs tabular-nums text-muted-foreground">
         {formatTime(current)} / {formatTime(duration)}
       </span>
     </div>

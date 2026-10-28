@@ -489,17 +489,19 @@ export const AudioScrubber = ({
         style={{ width: `${localProgress * 100}%` }}
       />
 
-      <div
-        className="bg-primary pointer-events-none absolute top-0 bottom-0 w-0.5"
-        style={{ left: `${localProgress * 100}%` }}
-      />
-
-      {showHandle && (
+      {localProgress > 0 || isDragging ? (
         <div
-          className="border-background bg-primary pointer-events-none absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 shadow-lg transition-transform hover:scale-110"
+          className="bg-primary pointer-events-none absolute top-0 bottom-0 w-0.5"
           style={{ left: `${localProgress * 100}%` }}
         />
-      )}
+      ) : null}
+
+      {showHandle && (localProgress > 0 || isDragging) ? (
+        <div
+          className="border-background bg-primary pointer-events-none absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 shadow-lg transition-transform hover:scale-110"
+          style={{ left: `${localProgress * 100}%` }}
+        />
+      ) : null}
     </div>
   )
 }

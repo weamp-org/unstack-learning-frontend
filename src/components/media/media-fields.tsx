@@ -4,6 +4,8 @@ import {
   ImageIcon,
   ImagePlusIcon,
   MicIcon,
+  PauseIcon,
+  PlayIcon,
   SquareIcon,
   Trash2Icon,
   XIcon,
@@ -254,6 +256,10 @@ function VoiceRecorder({
   );
   const [error, setError] = useState<string | null>(null);
   const [fileBusy, setFileBusy] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const pausedAccumMsRef = useRef(0);
+  const pausedAtRef = useRef<number | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -281,7 +287,7 @@ function VoiceRecorder({
     };
   }, [preview]);
 
-  function stopMeter() {
+  function stopMeter(reset = true) {
     if (animationRef.current !== null) {
       window.cancelAnimationFrame(animationRef.current);
       animationRef.current = null;
@@ -289,7 +295,7 @@ function VoiceRecorder({
     void audioContextRef.current?.close();
     audioContextRef.current = null;
     analyserRef.current = null;
-    setLevels(new Array(48).fill(0));
+    if (reset) setLevels(new Array(48).fill(0));
   }
 
   function stopTimer() {
@@ -338,6 +344,40 @@ function VoiceRecorder({
     animationRef.current = window.requestAnimationFrame(paint);
   }
 
+  /// Elapsed recording time, excluding any paused stretches.
+  function elapsedSeconds(): number {
+    const now = Date.now();
+    const pausedFor =
+      pausedAccumMsRef.current +
+      (pausedAtRef.current === null ? 0 : now - pausedAtRef.current);
+    return Math.max(
+      0,
+      Math.round((now - startedAtRef.current - pausedFor) / 1000),
+    );
+  }
+
+  function pause() {
+    const recorder = recorderRef.current;
+    if (recorder?.state !== "recording") return;
+    recorder.pause();
+    pausedAtRef.current = Date.now();
+    setPaused(true);
+    // Freeze the meter on its last frame rather than dropping it to zero.
+    stopMeter(false);
+  }
+
+  function resume() {
+    const recorder = recorderRef.current;
+    if (recorder?.state !== "paused") return;
+    recorder.resume();
+    if (pausedAtRef.current !== null) {
+      pausedAccumMsRef.current += Date.now() - pausedAtRef.current;
+      pausedAtRef.current = null;
+    }
+    setPaused(false);
+    if (streamRef.current) startMeter(streamRef.current);
+  }
+
   async function start() {
     setError(null);
     const mimeType = supportedMimeType();
@@ -368,23 +408,26 @@ function VoiceRecorder({
         stopStream();
         stopTimer();
         stopMeter();
-        const elapsed = Math.max(
-          1,
-          Math.round((Date.now() - startedAtRef.current) / 1000),
-        );
+        const elapsed = Math.max(1, elapsedSeconds());
         const blob = new Blob(chunksRef.current, { type: mimeType });
         setState("preview");
         setPreview({ blob, url: URL.createObjectURL(blob) });
         setSeconds(elapsed);
+        setPaused(false);
+        pausedAtRef.current = null;
+        pausedAccumMsRef.current = 0;
       });
 
       startedAtRef.current = Date.now();
+      pausedAccumMsRef.current = 0;
+      pausedAtRef.current = null;
+      setPaused(false);
       recorder.start();
       startMeter(stream);
       setState("recording");
       setSeconds(0);
       timerRef.current = window.setInterval(() => {
-        const elapsed = Math.round((Date.now() - startedAtRef.current) / 1000);
+        const elapsed = elapsedSeconds();
         setSeconds(elapsed);
         if (elapsed >= MAX_AUDIO_SECONDS) stop();
       }, 500);
@@ -432,7 +475,28 @@ function VoiceRecorder({
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border p-3">
+    <fieldset
+      aria-label="Voice note recorder"
+      onDragOver={(event) => {
+        if (state !== "idle") return;
+        event.preventDefault();
+        setDragging(true);
+      }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={(event) => {
+        event.preventDefault();
+        setDragging(false);
+        if (state !== "idle") return;
+        const file = event.dataTransfer.files?.[0];
+        if (file) void addFromFile(file);
+      }}
+      className={cn(
+        "flex flex-col gap-3 rounded-xl border p-3 transition-colors",
+        state === "idle" && "min-h-40 justify-center border-dashed",
+        state === "recording" && "border-primary/50 bg-primary/5",
+        dragging && "border-primary bg-primary/5",
+      )}
+    >
       <input
         ref={fileRef}
         type="file"
@@ -458,9 +522,22 @@ function VoiceRecorder({
           />
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-medium" aria-live="polite">
-              Recording {formatDuration(seconds)} /{" "}
+              {paused ? "Paused" : "Recording"} {formatDuration(seconds)} /{" "}
               {formatDuration(MAX_AUDIO_SECONDS)}
             </span>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={paused ? resume : pause}
+            >
+              {paused ? (
+                <PlayIcon aria-hidden="true" />
+              ) : (
+                <PauseIcon aria-hidden="true" />
+              )}
+              {paused ? "Resume" : "Pause"}
+            </Button>
             <Button type="button" size="sm" variant="outline" onClick={stop}>
               <SquareIcon aria-hidden="true" />
               Stop
@@ -495,26 +572,33 @@ function VoiceRecorder({
           </div>
         </div>
       ) : (
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-col items-center justify-center gap-3 text-center">
+          <span className="flex size-11 items-center justify-center rounded-full bg-muted">
+            <MicIcon
+              aria-hidden="true"
+              className="size-5 text-muted-foreground"
+            />
+          </span>
           <Button
             type="button"
-            size="sm"
-            variant="outline"
             disabled={state === "requesting" || fileBusy}
             onClick={() => void start()}
           >
             <MicIcon aria-hidden="true" />
             {state === "requesting" ? "Starting…" : "Record a voice note"}
           </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            disabled={state === "requesting" || fileBusy}
-            onClick={() => fileRef.current?.click()}
-          >
-            Upload audio instead
-          </Button>
+          <p className="text-xs text-muted-foreground">
+            Drag an audio file here, or{" "}
+            <button
+              type="button"
+              className="font-medium text-foreground underline underline-offset-4 disabled:opacity-50"
+              disabled={state === "requesting" || fileBusy}
+              onClick={() => fileRef.current?.click()}
+            >
+              browse
+            </button>
+            .
+          </p>
         </div>
       )}
 
@@ -523,7 +607,7 @@ function VoiceRecorder({
           {error}
         </p>
       ) : null}
-    </div>
+    </fieldset>
   );
 }
 
