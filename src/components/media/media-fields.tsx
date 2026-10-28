@@ -79,11 +79,11 @@ export function MediaFields({ media }: { media: MediaController }) {
                 <span className="truncate">{item.label}</span>
               </span>
               <div className="flex items-center gap-1">
-                <span className="text-xs text-muted-foreground">
+                <span className="max-w-40 truncate text-xs text-muted-foreground">
                   {item.status === "ready"
                     ? formatDuration(item.durationSeconds ?? 0)
                     : item.status === "error"
-                      ? item.error
+                      ? (item.error ?? "Upload failed")
                       : `Uploading… ${item.progress}%`}
                 </span>
                 <Button
@@ -466,9 +466,9 @@ function VoiceRecorder({
           </div>
         </div>
       ) : state === "preview" && preview ? (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           <Waveform src={preview.url} label="Your voice note" />
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 border-t pt-3">
             <Button
               type="button"
               size="sm"

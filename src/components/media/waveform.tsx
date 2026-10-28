@@ -8,7 +8,6 @@ import { AudioScrubber } from "@/components/ui/waveform";
 import { cn } from "@/lib/utils";
 
 const PEAK_COUNT = 256;
-const PLACEHOLDER_PEAKS = Array.from({ length: 100 }, () => 0.25);
 
 /**
  * Waveform player for voice notes, built on the ElevenLabs UI canvas
@@ -59,7 +58,7 @@ export function Waveform({
         }
         const loudest = Math.max(...values, 0.0001);
         if (!cancelled) {
-          setPeaks(values.map((value) => Math.max(0.04, value / loudest)));
+          setPeaks(values.map((value) => Math.max(0.03, value / loudest)));
         }
         void context.close();
       } catch {
@@ -153,38 +152,48 @@ export function Waveform({
   }
 
   return (
-    <div className={cn("flex items-center gap-3", className)}>
+    <div className={cn("flex w-full min-w-0 items-center gap-2.5", className)}>
       <Button
         type="button"
-        variant="outline"
-        size="icon-sm"
+        size="icon"
+        className="size-9 shrink-0 rounded-full"
         aria-label={playing ? `Pause ${label}` : `Play ${label}`}
         onClick={toggle}
       >
         {playing ? (
-          <PauseIcon aria-hidden="true" />
+          <PauseIcon aria-hidden="true" className="size-4" />
         ) : (
-          <PlayIcon aria-hidden="true" />
+          <PlayIcon aria-hidden="true" className="ml-0.5 size-4" />
         )}
       </Button>
 
-      <AudioScrubber
-        data={peaks ?? PLACEHOLDER_PEAKS}
-        currentTime={current}
-        duration={duration || 1}
-        onSeek={seekTo}
-        onKeyDown={onKeyDown}
-        aria-label={`Seek ${label}`}
-        aria-valuetext={`${formatTime(current)} of ${formatTime(duration)}`}
-        showHandle
-        height={44}
-        barWidth={3}
-        barGap={2}
-        barRadius={1.5}
-        className="min-w-0 flex-1"
-      />
+      {peaks ? (
+        // px keeps the scrub handle inside the row instead of overlapping the
+        // play button or the timestamp.
+        <div className="min-w-0 flex-1 px-1">
+          <AudioScrubber
+            data={peaks}
+            currentTime={current}
+            duration={duration || 1}
+            onSeek={seekTo}
+            onKeyDown={onKeyDown}
+            aria-label={`Seek ${label}`}
+            aria-valuetext={`${formatTime(current)} of ${formatTime(duration)}`}
+            showHandle
+            height={44}
+            barWidth={2}
+            barGap={2}
+            barRadius={1}
+          />
+        </div>
+      ) : (
+        <div
+          aria-hidden="true"
+          className="h-11 min-w-0 flex-1 animate-pulse rounded-md bg-muted/60"
+        />
+      )}
 
-      <span className="w-20 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
+      <span className="shrink-0 whitespace-nowrap text-[11px] tabular-nums text-muted-foreground">
         {formatTime(current)} / {formatTime(duration)}
       </span>
     </div>
