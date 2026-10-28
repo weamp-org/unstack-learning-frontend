@@ -182,7 +182,8 @@ export function Waveform({
             showHandle
             height={44}
             barWidth={2}
-            barGap={2}
+            barGap={1}
+            barHeight={3}
             barRadius={1}
           />
         </div>

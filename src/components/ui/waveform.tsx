@@ -479,6 +479,9 @@ export const AudioScrubber = ({
         barHeight={barHeight}
         data={waveformData}
         fadeEdges={false}
+        // Without this the canvas falls back to its 128px default and paints
+        // outside the scrubber's fixed height.
+        height="100%"
       />
 
       <div
