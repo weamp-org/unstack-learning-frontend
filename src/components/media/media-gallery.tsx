@@ -2,6 +2,7 @@
 
 import { MicIcon } from "lucide-react";
 import Image from "next/image";
+import { Waveform } from "@/components/media/waveform";
 
 import type { MediaAttachment } from "@/lib/media";
 
@@ -50,15 +51,10 @@ export function MediaGallery({ media }: { media?: MediaAttachment[] }) {
               ? ` · ${formatDuration(item.durationSeconds)}`
               : ""}
           </span>
-          <audio
-            controls
-            preload="metadata"
-            src={item.url}
-            className="h-9 w-full"
-            aria-label={`Voice note ${index + 1} from the learner`}
-          >
-            <track kind="captions" />
-          </audio>
+          <Waveform
+            src={item.url as string}
+            label={`voice note ${index + 1}`}
+          />
         </div>
       ))}
     </div>
