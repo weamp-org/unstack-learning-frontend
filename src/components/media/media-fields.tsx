@@ -276,7 +276,12 @@ function VoiceRecorder({
       if (animationRef.current !== null) {
         window.cancelAnimationFrame(animationRef.current);
       }
-      if (recorderRef.current?.state === "recording") {
+      // A paused recorder still holds the microphone and the buffered audio,
+      // so unmounting must finalize it too.
+      if (
+        recorderRef.current?.state === "recording" ||
+        recorderRef.current?.state === "paused"
+      ) {
         recorderRef.current.stop();
       }
       streamRef.current?.getTracks().forEach((track) => {
@@ -441,7 +446,12 @@ function VoiceRecorder({
   }
 
   function stop() {
-    if (recorderRef.current?.state === "recording") recorderRef.current.stop();
+    const recorder = recorderRef.current;
+    // stop() is valid from paused as well; checking only "recording" made the
+    // Stop button a no-op whenever the learner had paused.
+    if (recorder?.state === "recording" || recorder?.state === "paused") {
+      recorder.stop();
+    }
     stopTimer();
   }
 
