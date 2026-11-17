@@ -105,7 +105,9 @@ export function HeaderMenu() {
             {unread > 0 ? (
               <span
                 aria-hidden="true"
-                className="ml-auto flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground"
+                // The item's focus descendant rule repaints every child in
+                // accent-foreground; keep the badge's own contrast.
+                className="ml-auto flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground!"
               >
                 {unread > 99 ? "99+" : unread}
               </span>
