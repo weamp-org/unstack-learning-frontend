@@ -11,6 +11,7 @@ import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { MediaGallery } from "@/components/media/media-gallery";
+import { RequestStatusBadge } from "@/components/requests/status-badge";
 import { RequireRoles } from "@/components/require-roles";
 import { FormRequiredNote, RequiredMark } from "@/components/required-mark";
 import { SessionDetailsForm } from "@/components/session-form";
@@ -251,10 +252,13 @@ function Detail({ params }: { params: Promise<{ id: string }> }) {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-8">
-      <div>
+      <div className="flex flex-col gap-1">
         <h1 className="text-3xl font-bold tracking-tight">{request.topic}</h1>
-        <p className="text-muted-foreground">
-          {request.subject.name} · {formatDate(request.createdAt)}
+        <p className="flex flex-wrap items-center gap-2 text-muted-foreground">
+          <span>
+            {request.subject.name} · {formatDate(request.createdAt)}
+          </span>
+          <RequestStatusBadge status={request.status} />
         </p>
       </div>
 
