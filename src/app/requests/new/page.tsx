@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -211,11 +212,14 @@ function NewRequestForm() {
                 />
                 <Button
                   type="button"
-                  variant="outline"
-                  size="sm"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="shrink-0 text-muted-foreground"
+                  aria-label="Remove link"
+                  title="Remove link"
                   onClick={() => links.remove(index)}
                 >
-                  Remove
+                  <XIcon aria-hidden="true" />
                 </Button>
               </div>
             ))}
