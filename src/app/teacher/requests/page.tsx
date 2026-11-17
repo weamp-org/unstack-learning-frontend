@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { ImageIcon, MicIcon } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -216,11 +217,7 @@ function RequestQueue() {
                         {item.subject.name} · {item.learner?.name ?? "Learner"}{" "}
                         · {formatDate(item.createdAt)}
                       </span>
-                      {attachmentSummary(item.media) ? (
-                        <span className="text-muted-foreground">
-                          {attachmentSummary(item.media)}
-                        </span>
-                      ) : null}
+                      <AttachmentSummary media={item.media} />
                       {item.hasTeacher === false ? (
                         <span className="inline-flex items-center rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300">
                           No teacher for this subject
@@ -257,13 +254,40 @@ function RequestQueue() {
   );
 }
 
-function attachmentSummary(
-  media: { kind: "IMAGE" | "AUDIO" }[] | undefined,
-): string {
+function AttachmentSummary({
+  media,
+}: {
+  media: { kind: "IMAGE" | "AUDIO" }[] | undefined;
+}) {
   const images = (media ?? []).filter((item) => item.kind === "IMAGE").length;
   const audio = (media ?? []).filter((item) => item.kind === "AUDIO").length;
-  const parts: string[] = [];
-  if (images > 0) parts.push(`${images} photo${images === 1 ? "" : "s"}`);
-  if (audio > 0) parts.push(`${audio} voice note${audio === 1 ? "" : "s"}`);
-  return parts.join(" · ");
+  if (images === 0 && audio === 0) return null;
+
+  const label = [
+    images > 0 ? `${images} photo${images === 1 ? "" : "s"}` : null,
+    audio > 0 ? `${audio} voice note${audio === 1 ? "" : "s"}` : null,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  return (
+    <span
+      className="inline-flex items-center gap-2 text-muted-foreground"
+      title={label}
+    >
+      <span className="sr-only">{label}</span>
+      {images > 0 ? (
+        <span className="inline-flex items-center gap-1" aria-hidden="true">
+          <ImageIcon className="size-3.5" />
+          {images}
+        </span>
+      ) : null}
+      {audio > 0 ? (
+        <span className="inline-flex items-center gap-1" aria-hidden="true">
+          <MicIcon className="size-3.5" />
+          {audio}
+        </span>
+      ) : null}
+    </span>
+  );
 }
